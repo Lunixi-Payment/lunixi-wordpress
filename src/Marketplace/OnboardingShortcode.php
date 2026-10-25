@@ -64,7 +64,7 @@ final class OnboardingShortcode
                 . esc_html__('Continue onboarding', 'lunixi') . '</a></div>';
         }
 
-        wp_enqueue_script('lunixi-loader', $this->settings->portalCdnUrl() . '/lunixi-loader.min.js', [], null, true);
+        wp_enqueue_script('lunixi-loader', $this->settings->portalCdnUrl() . '/lunixi-loader.min.js', [], LUNIXI_VERSION, true);
         wp_enqueue_script('lunixi-marketplace', LUNIXI_URL . 'assets/js/marketplace.js', ['lunixi-loader'], LUNIXI_VERSION, true);
         wp_localize_script('lunixi-marketplace', 'lunixiMarketplace', [
             'token' => $token,

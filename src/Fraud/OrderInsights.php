@@ -109,7 +109,7 @@ final class OrderInsights
         $reasons = (string) $order->get_meta(self::META_REASONS);
         $trace = (string) $order->get_meta(self::META_TRACE);
 
-        echo '<p>' . self::badge($decision) . ' <strong>' . esc_html__('Score', 'lunixi') . ':</strong> ' . esc_html($score) . '</p>';
+        echo '<p>' . wp_kses_post(self::badge($decision)) . ' <strong>' . esc_html__('Score', 'lunixi') . ':</strong> ' . esc_html($score) . '</p>';
         if ($reasons !== '') {
             echo '<p><strong>' . esc_html__('Reasons', 'lunixi') . ':</strong><br/>' . esc_html(str_replace(',', ', ', $reasons)) . '</p>';
         }

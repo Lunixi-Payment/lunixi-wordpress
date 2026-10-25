@@ -87,7 +87,7 @@ final class Shortcode
             return '<div class="lunixi-kyc-notice">' . esc_html__('Verification is not configured yet.', 'lunixi') . '</div>';
         }
 
-        wp_enqueue_script('lunixi-kyc-sdk', $this->settings->portalCdnUrl() . '/lunixi-kyc.min.js', [], null, true);
+        wp_enqueue_script('lunixi-kyc-sdk', $this->settings->portalCdnUrl() . '/lunixi-kyc.min.js', [], LUNIXI_VERSION, true);
         wp_enqueue_script($handle, LUNIXI_URL . 'assets/js/kyc.js', ['lunixi-kyc-sdk'], LUNIXI_VERSION, true);
         wp_localize_script($handle, 'lunixiKyc', [
             'sessionUrl' => esc_url_raw(rest_url('lunixi/v1/kyc/session')),

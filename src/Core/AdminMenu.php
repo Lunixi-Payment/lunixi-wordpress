@@ -110,12 +110,12 @@ final class AdminMenu
 
         echo '<div class="lunixi-grid">';
         foreach ($this->modules() as $module) {
-            $url = esc_url(admin_url('admin.php?page=' . $module['slug']));
+            $url = admin_url('admin.php?page=' . $module['slug']);
             $pill = $module['ready']
                 ? '<span class="lunixi-pill lunixi-pill--live">' . esc_html__('Ready', 'lunixi') . '</span>'
                 : '<span class="lunixi-pill lunixi-pill--soon">' . esc_html__('Soon', 'lunixi') . '</span>';
-            echo '<a class="lunixi-module-card" href="' . $url . '">';
-            echo '<div class="lunixi-module-top"><span class="lunixi-module-icon dashicons ' . esc_attr($module['icon']) . '"></span>' . $pill . '</div>';
+            echo '<a class="lunixi-module-card" href="' . esc_url($url) . '">';
+            echo '<div class="lunixi-module-top"><span class="lunixi-module-icon dashicons ' . esc_attr($module['icon']) . '"></span>' . wp_kses_post($pill) . '</div>';
             echo '<div class="lunixi-module-title">' . esc_html($module['title']) . '</div>';
             echo '<div class="lunixi-module-desc">' . esc_html($module['desc']) . '</div>';
             echo '</a>';
@@ -146,8 +146,8 @@ final class AdminMenu
         echo '<div class="lunixi-card">';
         echo '<p class="lunixi-card-title">' . esc_html__('Status', 'lunixi') . '</p>';
         echo '<ul class="lunixi-status-list">';
-        echo '<li>' . $this->statusDot($configured) . esc_html__('API credentials', 'lunixi') . '</li>';
-        echo '<li>' . $this->statusDot($wcActive) . esc_html__('WooCommerce active', 'lunixi') . '</li>';
+        echo '<li>' . wp_kses_post($this->statusDot($configured)) . esc_html__('API credentials', 'lunixi') . '</li>';
+        echo '<li>' . wp_kses_post($this->statusDot($wcActive)) . esc_html__('WooCommerce active', 'lunixi') . '</li>';
         echo '</ul>';
 
         echo '<p class="lunixi-field" style="margin-top:16px">';
@@ -194,6 +194,7 @@ final class AdminMenu
         if (!current_user_can('manage_options')) {
             return;
         }
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- selects which admin screen to show; changes nothing.
         $slug = isset($_GET['page']) ? sanitize_key(wp_unslash((string) $_GET['page'])) : '';
         $current = null;
         foreach ($this->modules() as $module) {
@@ -218,9 +219,9 @@ final class AdminMenu
 
     private function header(string $title, string $subtitle): void
     {
-        $logo = esc_url(LUNIXI_URL . 'assets/img/logo.svg');
+        $logo = LUNIXI_URL . 'assets/img/logo.svg';
         echo '<div class="lunixi-header">';
-        echo '<img class="lunixi-logo" src="' . $logo . '" alt="Lunixi" />';
+        echo '<img class="lunixi-logo" src="' . esc_url($logo) . '" alt="Lunixi" />';
         echo '<div class="lunixi-header-text">';
         echo '<h1 class="lunixi-title">Lunixi <span class="lunixi-accent">' . esc_html($title) . '</span></h1>';
         echo '<p class="lunixi-subtitle">' . esc_html($subtitle) . '</p>';

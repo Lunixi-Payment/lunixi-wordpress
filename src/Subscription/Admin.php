@@ -55,6 +55,7 @@ final class Admin
         if (!current_user_can('manage_options')) {
             return;
         }
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- selects which subscription to show; changes nothing.
         $subscriptionId = isset($_GET['subscription']) ? sanitize_text_field(wp_unslash((string) $_GET['subscription'])) : '';
 
         echo '<div class="wrap lunixi-admin">';
@@ -115,13 +116,13 @@ final class Admin
                 $amount = (string) get_post_meta($id, SubscriptionStore::META_AMOUNT, true);
                 $currency = (string) get_post_meta($id, SubscriptionStore::META_CURRENCY, true);
                 $next = (string) get_post_meta($id, SubscriptionStore::META_NEXT_BILLING, true);
-                $detailUrl = esc_url(admin_url('admin.php?page=' . self::SLUG . '&subscription=' . rawurlencode($subId)));
+                $detailUrl = admin_url('admin.php?page=' . self::SLUG . '&subscription=' . rawurlencode($subId));
 
                 echo '<tr>';
-                echo '<td><a href="' . $detailUrl . '">' . esc_html($post->post_title) . '</a></td>';
+                echo '<td><a href="' . esc_url($detailUrl) . '">' . esc_html($post->post_title) . '</a></td>';
                 echo '<td>' . esc_html($this->customerLabel($id)) . '</td>';
                 echo '<td>' . esc_html($planNames[$planId] ?? $planId) . '</td>';
-                echo '<td>' . $this->statusBadge($status) . '</td>';
+                echo '<td>' . wp_kses_post($this->statusBadge($status)) . '</td>';
                 echo '<td>' . esc_html(self::formatDate($next)) . '</td>';
                 echo '<td>' . esc_html($amount !== '' && $currency !== '' ? Money::format($amount, $currency) : '—') . '</td>';
                 echo '</tr>';
@@ -135,8 +136,8 @@ final class Admin
 
     private function renderDetail(string $subscriptionId): void
     {
-        $backUrl = esc_url(admin_url('admin.php?page=' . self::SLUG));
-        echo '<p><a href="' . $backUrl . '">&larr; ' . esc_html__('All subscriptions', 'lunixi') . '</a></p>';
+        $backUrl = admin_url('admin.php?page=' . self::SLUG);
+        echo '<p><a href="' . esc_url($backUrl) . '">&larr; ' . esc_html__('All subscriptions', 'lunixi') . '</a></p>';
 
         $sdk = Plugin::instance()->sdk();
         $sub = null;
@@ -153,7 +154,7 @@ final class Admin
 
         $status = $sub->status();
         echo '<div class="lunixi-card">';
-        echo '<p class="lunixi-card-title">' . esc_html($sub->referenceCode() !== '' ? $sub->referenceCode() : $subscriptionId) . ' ' . $this->statusBadge($status) . '</p>';
+        echo '<p class="lunixi-card-title">' . esc_html($sub->referenceCode() !== '' ? $sub->referenceCode() : $subscriptionId) . ' ' . wp_kses_post($this->statusBadge($status)) . '</p>';
         echo '<table class="widefat striped" style="border:0">';
         $rows = [
             __('Subscription ID', 'lunixi') => $subscriptionId,
@@ -212,7 +213,7 @@ final class Admin
                 $amount = $inv->currency() !== '' ? Money::format((string) $inv->totalAmount(), $inv->currency()) : '—';
                 echo '<tr>';
                 echo '<td>' . esc_html($inv->invoiceNumber() !== '' ? $inv->invoiceNumber() : $inv->id()) . '</td>';
-                echo '<td>' . $this->statusBadge($inv->status()) . '</td>';
+                echo '<td>' . wp_kses_post($this->statusBadge($inv->status())) . '</td>';
                 echo '<td>' . esc_html($amount) . '</td>';
                 echo '<td>' . esc_html(self::formatDate((string) ($inv->billingPeriodStart() ?? '')) . ' – ' . self::formatDate((string) ($inv->billingPeriodEnd() ?? ''))) . '</td>';
                 echo '</tr>';
@@ -374,9 +375,9 @@ final class Admin
 
     private function header(string $title, string $subtitle): void
     {
-        $logo = esc_url(LUNIXI_URL . 'assets/img/logo.svg');
+        $logo = LUNIXI_URL . 'assets/img/logo.svg';
         echo '<div class="lunixi-header">';
-        echo '<img class="lunixi-logo" src="' . $logo . '" alt="Lunixi" />';
+        echo '<img class="lunixi-logo" src="' . esc_url($logo) . '" alt="Lunixi" />';
         echo '<div class="lunixi-header-text">';
         echo '<h1 class="lunixi-title">Lunixi <span class="lunixi-accent">' . esc_html($title) . '</span></h1>';
         echo '<p class="lunixi-subtitle">' . esc_html($subtitle) . '</p>';

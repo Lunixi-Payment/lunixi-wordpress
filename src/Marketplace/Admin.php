@@ -119,7 +119,7 @@ final class Admin
                 $userLabel = $userId !== null && get_userdata($userId) ? get_userdata($userId)->user_login : '—';
                 echo '<tr>';
                 echo '<td>' . esc_html($dealer->legalName() !== '' ? $dealer->legalName() : $dealer->id()) . '</td>';
-                echo '<td>' . self::badge($dealer->status()) . '</td>';
+                echo '<td>' . wp_kses_post(self::badge($dealer->status())) . '</td>';
                 echo '<td>' . esc_html((string) $userLabel) . '</td>';
                 echo '<td>';
                 echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline">';
@@ -155,7 +155,7 @@ final class Admin
             echo '<tr>';
             echo '<td style="word-break:break-all">' . esc_html((string) ($p['subDealerId'] ?? '—')) . '</td>';
             echo '<td>' . esc_html((string) ($p['netMinor'] ?? '—')) . '</td>';
-            echo '<td>' . self::badge((string) ($p['status'] ?? '')) . '</td>';
+            echo '<td>' . wp_kses_post(self::badge((string) ($p['status'] ?? ''))) . '</td>';
             echo '<td>' . esc_html((string) ($p['valorDate'] ?? '—')) . '</td>';
             echo '</tr>';
         }
@@ -231,8 +231,8 @@ final class Admin
 
     private function header(string $title, string $subtitle): void
     {
-        $logo = esc_url(LUNIXI_URL . 'assets/img/logo.svg');
-        echo '<div class="lunixi-header"><img class="lunixi-logo" src="' . $logo . '" alt="Lunixi" /><div class="lunixi-header-text">';
+        $logo = LUNIXI_URL . 'assets/img/logo.svg';
+        echo '<div class="lunixi-header"><img class="lunixi-logo" src="' . esc_url($logo) . '" alt="Lunixi" /><div class="lunixi-header-text">';
         echo '<h1 class="lunixi-title">Lunixi <span class="lunixi-accent">' . esc_html($title) . '</span></h1>';
         echo '<p class="lunixi-subtitle">' . esc_html($subtitle) . '</p></div></div>';
     }

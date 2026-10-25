@@ -330,15 +330,15 @@ final class Settings
         $keyId = $this->keyId();
         $hasPrivateKey = (string) ($this->all()['private_key'] ?? '') !== '';
         $hasWebhookSecret = (string) ($this->all()['webhook_secret'] ?? '') !== '';
-        $webhookUrl = esc_url(rest_url('lunixi/v1/webhook'));
-        $logo = esc_url(LUNIXI_URL . 'assets/img/logo.svg');
+        $webhookUrl = rest_url('lunixi/v1/webhook');
+        $logo = LUNIXI_URL . 'assets/img/logo.svg';
         $pillClass = $env === 'TEST' ? 'lunixi-pill--test' : 'lunixi-pill--live';
 
         echo '<div class="wrap lunixi-admin">';
 
         // Branded header (mirrors the Lunixi panel).
         echo '<div class="lunixi-header">';
-        echo '<img class="lunixi-logo" src="' . $logo . '" alt="Lunixi" />';
+        echo '<img class="lunixi-logo" src="' . esc_url($logo) . '" alt="Lunixi" />';
         echo '<div class="lunixi-header-text">';
         echo '<h1 class="lunixi-title">Lunixi <span class="lunixi-accent">' . esc_html__('Settings', 'lunixi') . '</span></h1>';
         echo '<p class="lunixi-subtitle">' . esc_html__('Payments · Fraud · Subscription · Identity · Sanction · KYC', 'lunixi') . '</p>';
@@ -366,7 +366,7 @@ final class Settings
 
         echo '<div class="lunixi-field"><label>' . esc_html__('Webhook Secret', 'lunixi') . '</label>';
         echo '<input type="password" name="lunixi_settings[webhook_secret]" value="" autocomplete="off" placeholder="' . esc_attr($hasWebhookSecret ? __('Stored — leave blank to keep', 'lunixi') : '') . '" />';
-        echo '<p class="description">' . sprintf(/* translators: %s = webhook endpoint URL */ esc_html__('Register this webhook URL in your Lunixi dashboard: %s', 'lunixi'), '<code>' . $webhookUrl . '</code>') . '</p></div>';
+        echo '<p class="description">' . wp_kses(sprintf(/* translators: %s = webhook endpoint URL */ esc_html__('Register this webhook URL in your Lunixi dashboard: %s', 'lunixi'), '<code>' . esc_html($webhookUrl) . '</code>'), ['code' => []]) . '</p></div>';
 
         echo '<div class="lunixi-field"><label>' . esc_html__('Base URL (optional)', 'lunixi') . '</label>';
         echo '<input type="url" name="lunixi_settings[base_url]" value="' . esc_attr((string) ($this->all()['base_url'] ?? '')) . '" placeholder="' . esc_attr($this->baseUrl()) . '" /></div>';
@@ -421,7 +421,7 @@ final class Settings
         wp_dropdown_pages([
             'name' => 'lunixi_settings[kyc_page_id]',
             'selected' => (int) ($this->all()['kyc_page_id'] ?? 0),
-            'show_option_none' => __('— Select —', 'lunixi'),
+            'show_option_none' => esc_html__('— Select —', 'lunixi'),
             'option_none_value' => '0',
         ]);
         echo '<p class="description">' . esc_html__('The page containing [lunixi_kyc] — used for "Verify to continue" links.', 'lunixi') . '</p></div>';

@@ -84,7 +84,7 @@ final class Admin
                 echo '<tr>';
                 echo '<td style="word-break:break-all">' . esc_html($s->sessionId()) . '</td>';
                 echo '<td>' . esc_html($s->sessionType()) . '</td>';
-                echo '<td>' . self::badge($s->status()) . '</td>';
+                echo '<td>' . wp_kses_post(self::badge($s->status())) . '</td>';
                 echo '<td>' . esc_html($s->decision() !== '' ? $s->decision() : '—') . '</td>';
                 echo '<td>' . esc_html(self::userLabel($s->externalCustomerId())) . '</td>';
                 echo '<td>' . esc_html((string) ($s->expiresAt() ?? '—')) . '</td>';
@@ -151,9 +151,9 @@ final class Admin
 
     private function header(string $title, string $subtitle): void
     {
-        $logo = esc_url(LUNIXI_URL . 'assets/img/logo.svg');
+        $logo = LUNIXI_URL . 'assets/img/logo.svg';
         echo '<div class="lunixi-header">';
-        echo '<img class="lunixi-logo" src="' . $logo . '" alt="Lunixi" />';
+        echo '<img class="lunixi-logo" src="' . esc_url($logo) . '" alt="Lunixi" />';
         echo '<div class="lunixi-header-text">';
         echo '<h1 class="lunixi-title">Lunixi <span class="lunixi-accent">' . esc_html($title) . '</span></h1>';
         echo '<p class="lunixi-subtitle">' . esc_html($subtitle) . '</p>';

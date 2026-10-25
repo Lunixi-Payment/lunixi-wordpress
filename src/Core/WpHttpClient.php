@@ -34,7 +34,7 @@ final class WpHttpClient implements HttpClientInterface
         $response = wp_remote_request($url, $args);
 
         if (is_wp_error($response)) {
-            throw new ApiException('HTTP transport error: ' . $response->get_error_message());
+            throw new ApiException('HTTP transport error: ' . esc_html($response->get_error_message()));
         }
 
         $status = (int) wp_remote_retrieve_response_code($response);

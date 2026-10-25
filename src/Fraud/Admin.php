@@ -85,7 +85,7 @@ final class Admin
             echo '</tr></thead><tbody>';
             foreach ($items as $d) {
                 echo '<tr>';
-                echo '<td>' . OrderInsights::badge($d->decision()) . '</td>';
+                echo '<td>' . wp_kses_post(OrderInsights::badge($d->decision())) . '</td>';
                 echo '<td>' . esc_html((string) $d->score()) . '</td>';
                 echo '<td style="word-break:break-all">' . esc_html($d->paymentId() !== '' ? $d->paymentId() : '—') . '</td>';
                 echo '<td>' . esc_html(implode(', ', $d->reasonCodes())) . '</td>';
@@ -101,9 +101,9 @@ final class Admin
 
     private function header(string $title, string $subtitle): void
     {
-        $logo = esc_url(LUNIXI_URL . 'assets/img/logo.svg');
+        $logo = LUNIXI_URL . 'assets/img/logo.svg';
         echo '<div class="lunixi-header">';
-        echo '<img class="lunixi-logo" src="' . $logo . '" alt="Lunixi" />';
+        echo '<img class="lunixi-logo" src="' . esc_url($logo) . '" alt="Lunixi" />';
         echo '<div class="lunixi-header-text">';
         echo '<h1 class="lunixi-title">Lunixi <span class="lunixi-accent">' . esc_html($title) . '</span></h1>';
         echo '<p class="lunixi-subtitle">' . esc_html($subtitle) . '</p>';

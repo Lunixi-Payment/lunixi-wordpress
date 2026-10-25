@@ -48,6 +48,7 @@ final class WooProduct
     public function save($postId): void
     {
         // Saved within WooCommerce's own nonce-verified product save handler.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- woocommerce_process_product_meta runs after WooCommerce checks its nonce.
         $value = isset($_POST[self::PLAN_META]) ? sanitize_text_field(wp_unslash((string) $_POST[self::PLAN_META])) : '';
         $product = wc_get_product($postId);
         if (!$product) {

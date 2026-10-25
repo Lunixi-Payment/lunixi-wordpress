@@ -56,8 +56,8 @@ final class Shortcode
         // Embed mode: load the Lunixi portal SDK from the CDN — the loader must
         // load before the portal bundle (matches the Lunixi portal examples).
         $cdn = $this->settings->portalCdnUrl();
-        wp_enqueue_script('lunixi-loader', $cdn . '/lunixi-loader.min.js', [], null, true);
-        wp_enqueue_script('lunixi-portal-sdk', $cdn . '/lunixi-portal.min.js', ['lunixi-loader'], null, true);
+        wp_enqueue_script('lunixi-loader', $cdn . '/lunixi-loader.min.js', [], LUNIXI_VERSION, true);
+        wp_enqueue_script('lunixi-portal-sdk', $cdn . '/lunixi-portal.min.js', ['lunixi-loader'], LUNIXI_VERSION, true);
         wp_enqueue_script('lunixi-portal', LUNIXI_URL . 'assets/js/portal.js', ['lunixi-portal-sdk'], LUNIXI_VERSION, true);
         // Shared config (same user for every instance on the page). portal.js
         // mounts each `.lunixi-portal` element, so multiple [lunixi_subscriptions]

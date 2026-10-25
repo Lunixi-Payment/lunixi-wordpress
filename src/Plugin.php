@@ -48,9 +48,6 @@ final class Plugin
 
     public function boot(): void
     {
-        // WP.org auto-loads translations, but be explicit for self-hosted installs.
-        load_plugin_textdomain('lunixi', false, dirname(LUNIXI_BASENAME) . '/languages');
-
         $this->settings->registerAdmin();
         (new AdminMenu($this->settings, $this->sdk))->register();
         (new WebhookController($this->settings))->register();

@@ -57,7 +57,8 @@ final class WooProductVendor
         if (!$product) {
             return;
         }
-        $value = isset($_POST[VendorStore::PRODUCT_META_VENDOR]) ? (int) $_POST[VendorStore::PRODUCT_META_VENDOR] : 0;
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- woocommerce_process_product_meta runs after WooCommerce checks its nonce.
+        $value = isset($_POST[VendorStore::PRODUCT_META_VENDOR]) ? absint(wp_unslash($_POST[VendorStore::PRODUCT_META_VENDOR])) : 0;
         if ($value > 0) {
             $product->update_meta_data(VendorStore::PRODUCT_META_VENDOR, $value);
         } else {

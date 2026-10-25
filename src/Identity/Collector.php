@@ -57,7 +57,7 @@ final class Collector
 
         $context = in_array($context, self::CONTEXTS, true) ? $context : 'live_session';
 
-        wp_enqueue_script('lunixi-identity-sdk', $this->settings->portalCdnUrl() . '/lunixi-identity.min.js', [], null, true);
+        wp_enqueue_script('lunixi-identity-sdk', $this->settings->portalCdnUrl() . '/lunixi-identity.min.js', [], LUNIXI_VERSION, true);
         wp_enqueue_script('lunixi-identity', LUNIXI_URL . 'assets/js/identity.js', ['lunixi-identity-sdk'], LUNIXI_VERSION, true);
         wp_localize_script('lunixi-identity', 'lunixiIdentity', [
             'apiBase' => esc_url_raw($this->settings->baseUrl()),
@@ -82,14 +82,16 @@ final class Collector
 
     public function renderField(): void
     {
-        echo $this->field(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — built from esc_attr above.
+        echo wp_kses($this->field(), ['input' => ['type' => true, 'name' => true, 'id' => true, 'value' => true]]);
     }
 
     /** Reads the submitted traceId from the current request (bounded, sanitised). */
     public static function traceFromRequest(): string
     {
-        // Registration/login/checkout POSTs are nonce-protected by WP/WooCommerce;
-        // the traceId is opaque and server-verified — never trusted as an identity.
+        // Read during registration, login and checkout. The traceId is an opaque
+        // device signal that Lunixi verifies server-side; it is never trusted as an
+        // identity and changes nothing by itself, so no nonce is needed to read it.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- opaque, server-verified signal; read only.
         $raw = isset($_POST[self::FIELD]) ? sanitize_text_field(wp_unslash((string) $_POST[self::FIELD])) : '';
         return strlen($raw) <= 128 ? $raw : '';
     }
