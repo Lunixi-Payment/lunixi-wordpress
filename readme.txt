@@ -12,13 +12,13 @@ Lunixi payments for WooCommerce: card checkout with 3D Secure, pre-authorization
 
 == Description ==
 
-**Lunixi** is a payment platform. This plugin adds Lunixi to WooCommerce as a payment method and connects your store to the virtual POS (sanal POS) of many Turkish banks and payment institutions through a single integration.
+**Lunixi** is a payment platform. This plugin adds Lunixi to WooCommerce as a payment method and connects your store, through a single integration, to the virtual POS (sanal POS) of every bank in Türkiye that offers one, and to payment institutions.
 
-= One integration, many banks =
+= One integration, every bank =
 
 Connect the virtual POS accounts you already have and take card payments through all of them from one checkout:
 
-* **Banks:** Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB, VakıfBank, Yapı Kredi, Ziraat Bankası (including Ziraat Payflex).
+* **Banks:** every bank in Türkiye that offers a virtual POS, including Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB, VakıfBank, Yapı Kredi and Ziraat Bankası (including Ziraat Payflex).
 * **Payment institutions:** iyzico, Moka, Paycell, Paynkolay, RubikPara.
 * **Smart routing and failover:** Lunixi picks the most suitable connected provider for each payment and, when a provider is down or times out, retries on the next one. Declines such as insufficient funds are never retried.
 
@@ -38,9 +38,9 @@ Turn on only what you need: fraud screening, subscriptions, identity (multi-acco
 
 = Türkçe =
 
-**Lunixi** bir ödeme altyapısıdır. Bu eklenti WooCommerce mağazanıza Lunixi'yi ödeme yöntemi olarak ekler ve mağazanızı tek bir entegrasyonla birçok bankanın ve ödeme kuruluşunun **sanal POS**'una bağlar.
+**Lunixi** bir ödeme altyapısıdır. Bu eklenti WooCommerce mağazanıza Lunixi'yi ödeme yöntemi olarak ekler ve mağazanızı tek bir entegrasyonla **sanal POS veren tüm bankalara** ve ödeme kuruluşlarına bağlar.
 
-* **Tek entegrasyon, birçok banka:** Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB, VakıfBank, Yapı Kredi ve Ziraat Bankası (Ziraat Payflex dahil) sanal POS'ları ile iyzico, Moka, Paycell, Paynkolay ve RubikPara.
+* **Tek entegrasyon, tüm bankalar:** Türkiye'de sanal POS veren tüm bankalar; örneğin Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB, VakıfBank, Yapı Kredi ve Ziraat Bankası (Ziraat Payflex dahil). Ödeme kuruluşlarından iyzico, Moka, Paycell, Paynkolay ve RubikPara.
 * **Akıllı yönlendirme:** Lunixi her ödeme için bağlı sağlayıcılardan en uygununu seçer; sağlayıcı yanıt vermezse ödemeyi sıradakine aktarır. Yetersiz bakiye gibi retler yeniden denenmez.
 * **3D Secure ile kartla ödeme** ve **taksit:** müşteri taksit sayısını ödeme formunda seçer.
 * **Ön provizyon, tam ve kısmi iade** WooCommerce yönetim panelinden.

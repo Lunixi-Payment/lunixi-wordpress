@@ -14,12 +14,14 @@
 **[Documentation](https://docs.lunixi.com/sdks/wordpress) · [Changelog](readme.txt) · [Issues](https://github.com/Lunixi-Payment/lunixi-wordpress/issues) · [Security](https://github.com/Lunixi-Payment/lunixi-wordpress/blob/main/SECURITY.md)**
 
 Lunixi payments for WooCommerce: one integration that connects your store to
-the virtual POS (sanal POS) of many Turkish banks and payment institutions, with
+the virtual POS (sanal POS) of every bank in Türkiye that offers one and to
+payment institutions, with
 3D Secure, installments (taksit), pre-authorization, refunds and order status
 from signed webhooks.
 
-- **Banks:** Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB,
-  VakıfBank, Yapı Kredi, Ziraat Bankası (including Ziraat Payflex).
+- **Banks:** every bank in Türkiye that offers a virtual POS, including Akbank,
+  Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB, VakıfBank, Yapı Kredi and
+  Ziraat Bankası (including Ziraat Payflex).
 - **Payment institutions:** iyzico, Moka, Paycell, Paynkolay, RubikPara.
 - **Smart routing and failover:** Lunixi picks the most suitable connected
   provider for each payment and retries on the next one when a provider is down.
@@ -29,9 +31,9 @@ from signed webhooks.
 - **Beyond payments:** fraud screening, subscriptions, KYC, sanction screening,
   identity protection and marketplace split payments.
 
-**Türkçe:** Lunixi, WooCommerce mağazanızı tek entegrasyonla Akbank, Garanti BBVA,
-İş Bankası, Yapı Kredi, Ziraat Bankası ve diğer bankaların sanal POS'larına ve
-iyzico, Paycell gibi ödeme kuruluşlarına bağlar. 3D Secure, taksit, ön provizyon,
+**Türkçe:** Lunixi, WooCommerce mağazanızı tek entegrasyonla sanal POS veren tüm
+bankalara (Akbank, Garanti BBVA, İş Bankası, Yapı Kredi, Ziraat Bankası ve
+diğerleri) ve iyzico, Paycell gibi ödeme kuruluşlarına bağlar. 3D Secure, taksit, ön provizyon,
 iade ve akıllı yönlendirme hazır gelir; kart bilgisi sunucunuza hiç gelmez.
 
 ## Requirements
