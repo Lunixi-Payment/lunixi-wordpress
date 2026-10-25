@@ -19,9 +19,10 @@ payment institutions, with
 3D Secure, installments (taksit), pre-authorization, refunds and order status
 from signed webhooks.
 
-- **Banks:** every bank in Türkiye that offers a virtual POS, including Akbank,
-  Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB, VakıfBank, Yapı Kredi and
-  Ziraat Bankası (including Ziraat Payflex).
+- **All banks, one POS:** every bank in Türkiye that offers a virtual POS,
+  including Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB,
+  VakıfBank, Yapı Kredi and Ziraat Bankası (including Ziraat Payflex). If your
+  bank is not connected yet, send Lunixi a request and we add it.
 - **Payment institutions:** iyzico, Moka, Paycell, Paynkolay, RubikPara.
 - **Smart routing and failover:** Lunixi picks the most suitable connected
   provider for each payment and retries on the next one when a provider is down.
@@ -31,9 +32,10 @@ from signed webhooks.
 - **Beyond payments:** fraud screening, subscriptions, KYC, sanction screening,
   identity protection and marketplace split payments.
 
-**Türkçe:** Lunixi, WooCommerce mağazanızı tek entegrasyonla sanal POS veren tüm
-bankalara (Akbank, Garanti BBVA, İş Bankası, Yapı Kredi, Ziraat Bankası ve
-diğerleri) ve iyzico, Paycell gibi ödeme kuruluşlarına bağlar. 3D Secure, taksit, ön provizyon,
+**Türkçe — tüm bankalar, tek POS:** Lunixi, WooCommerce mağazanızı tek
+entegrasyonla sanal POS veren tüm bankalara (Akbank, Garanti BBVA, İş Bankası,
+Yapı Kredi, Ziraat Bankası ve diğerleri) ve iyzico, Paycell gibi ödeme
+kuruluşlarına bağlar. Bankanız henüz bağlı değilse bize talep iletin, ekleyelim. 3D Secure, taksit, ön provizyon,
 iade ve akıllı yönlendirme hazır gelir; kart bilgisi sunucunuza hiç gelmez.
 
 ## Requirements
