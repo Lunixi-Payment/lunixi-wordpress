@@ -1,0 +1,35 @@
+{
+    "name": "lunixi/woocommerce",
+    "description": "Lunixi for WordPress — payments (WooCommerce gateway), webhooks and shared Lunixi services. Bundles the Lunixi PHP SDK (namespace-scoped via PHP-Scoper for distribution).",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4",
+        "ext-sodium": "*",
+        "lunixi/php-sdk": "^0.28"
+    },
+    "require-dev": {
+        "humbug/php-scoper": "^0.18"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lunixi\\WP\\": "src/"
+        }
+    },
+    "scripts": {
+        "lint": "@php -l src",
+        "check": "@php bin/check-sdk-symbols.php",
+        "build:scoped": [
+            "php-scoper add-prefix --output-dir=build/vendor --force",
+            "composer dump-autoload --working-dir=build --classmap-authoritative"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
