@@ -1,0 +1,6 @@
+<svg width="150" height="40" viewBox="0 0 150 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lunixi">
+  <!-- PLACEHOLDER logo — replace with the final Lunixi brand mark. -->
+  <rect width="40" height="40" rx="11" fill="#F97316"/>
+  <path d="M20 8 L23 17 L32 20 L23 23 L20 32 L17 23 L8 20 L17 17 Z" fill="#FFFFFF"/>
+  <text x="52" y="27" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="23" font-weight="700" letter-spacing="-0.6" fill="#0A0F1A">lunixi</text>
+</svg>

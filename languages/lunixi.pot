@@ -1,0 +1,1391 @@
+# Copyright (C) 2026 Lunixi
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Lunixi for WordPress 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wordpress\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-06-16T12:28:58+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: lunixi\n"
+
+#. Plugin Name of the plugin
+#: lunixi.php
+msgid "Lunixi for WordPress"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: lunixi.php
+msgid "https://lunixi.com/wordpress"
+msgstr ""
+
+#. Description of the plugin
+#: lunixi.php
+msgid "Lunixi payments for WordPress & WooCommerce — secure checkout, refunds and webhooks. Modular: payment first, with fraud, subscription, identity, sanction and KYC to follow."
+msgstr ""
+
+#. Author of the plugin
+#: lunixi.php
+#: src/Core/AdminMenu.php:47
+#: src/Core/AdminMenu.php:48
+#: src/Payment/Gateway.php:33
+#: src/Payment/Gateway.php:89
+msgid "Lunixi"
+msgstr ""
+
+#. Author URI of the plugin
+#: lunixi.php
+msgid "https://lunixi.com"
+msgstr ""
+
+#: src/Automation/Admin.php:49
+#: src/Automation/Admin.php:64
+msgid "Automation"
+msgstr ""
+
+#: src/Automation/Admin.php:51
+msgid "Forward WooCommerce events to your Lunixi automation flows."
+msgstr ""
+
+#: src/Automation/Admin.php:64
+msgid "WooCommerce → Lunixi event bridge"
+msgstr ""
+
+#: src/Automation/Admin.php:68
+#: src/Core/AdminMenu.php:144
+#: src/Fraud/Admin.php:100
+#: src/Kyc/Admin.php:79
+#: src/Marketplace/Admin.php:113
+#: src/Marketplace/Admin.php:150
+#: src/Sanction/Admin.php:127
+#: src/Subscription/Admin.php:103
+#: src/Subscription/Admin.php:207
+msgid "Status"
+msgstr ""
+
+#: src/Automation/Admin.php:70
+msgid "Enabled"
+msgstr ""
+
+#: src/Automation/Admin.php:71
+#: src/Core/Settings.php:382
+msgid "Site ID"
+msgstr ""
+
+#: src/Automation/Admin.php:72
+#: src/Core/Settings.php:385
+msgid "Merchant ID"
+msgstr ""
+
+#: src/Automation/Admin.php:73
+#: src/Core/Settings.php:388
+msgid "Shared secret"
+msgstr ""
+
+#: src/Automation/Admin.php:80
+msgid "Check connection"
+msgstr ""
+
+#: src/Automation/Admin.php:82
+msgid "Configure"
+msgstr ""
+
+#: src/Automation/Admin.php:86
+msgid "Forwarded events"
+msgstr ""
+
+#: src/Automation/Admin.php:88
+msgid "Fire a custom event from your code: lunixi_automation_send($event, $data). KYC and subscription events reach automation directly on the platform — no need to forward them here."
+msgstr ""
+
+#: src/Automation/Admin.php:95
+#: src/Core/AdminMenu.php:173
+#: src/Fraud/Admin.php:163
+#: src/Marketplace/Admin.php:168
+#: src/Sanction/Admin.php:174
+#: src/Subscription/Admin.php:266
+msgid "Insufficient permissions."
+msgstr ""
+
+#: src/Automation/Admin.php:103
+msgid "Connection OK — the automation site is reachable."
+msgstr ""
+
+#. translators: %s = message
+#: src/Automation/Admin.php:104
+#, php-format
+msgid "Connection check failed: %s"
+msgstr ""
+
+#: src/Automation/AutomationBridge.php:86
+msgid "No site id configured."
+msgstr ""
+
+#: src/Automation/AutomationBridge.php:94
+msgid "Reachable"
+msgstr ""
+
+#: src/Automation/AutomationBridge.php:94
+msgid "Unexpected status"
+msgstr ""
+
+#: src/Core/AdminMenu.php:56
+msgid "Dashboard"
+msgstr ""
+
+#: src/Core/AdminMenu.php:65
+#: src/Core/Settings.php:271
+msgid "Settings"
+msgstr ""
+
+#: src/Core/AdminMenu.php:77
+#: src/Core/AdminMenu.php:129
+msgid "Payments"
+msgstr ""
+
+#: src/Core/AdminMenu.php:77
+msgid "Card checkout, 3-D Secure, instalments and refunds via WooCommerce."
+msgstr ""
+
+#: src/Core/AdminMenu.php:78
+msgid "Orchestration"
+msgstr ""
+
+#: src/Core/AdminMenu.php:78
+msgid "Smart routing & optimization across providers."
+msgstr ""
+
+#: src/Core/AdminMenu.php:79
+#: src/Fraud/Admin.php:49
+msgid "Fraud"
+msgstr ""
+
+#: src/Core/AdminMenu.php:79
+msgid "Real-time fraud signals on checkout and login."
+msgstr ""
+
+#: src/Core/AdminMenu.php:80
+#: src/Kyc/OrderSnapshot.php:87
+msgid "Identity"
+msgstr ""
+
+#: src/Core/AdminMenu.php:80
+msgid "Identity verification for sign-up and checkout."
+msgstr ""
+
+#: src/Core/AdminMenu.php:81
+#: src/Sanction/Admin.php:51
+msgid "Sanction"
+msgstr ""
+
+#: src/Core/AdminMenu.php:81
+msgid "Sanctions / watchlist screening."
+msgstr ""
+
+#: src/Core/AdminMenu.php:82
+msgid "Subscription"
+msgstr ""
+
+#: src/Core/AdminMenu.php:82
+msgid "Recurring billing and subscriptions."
+msgstr ""
+
+#: src/Core/AdminMenu.php:83
+#: src/Kyc/Admin.php:55
+#: src/Kyc/Admin.php:104
+msgid "KYC"
+msgstr ""
+
+#: src/Core/AdminMenu.php:83
+msgid "Customer onboarding and KYC."
+msgstr ""
+
+#: src/Core/AdminMenu.php:98
+msgid "Overview"
+msgstr ""
+
+#: src/Core/AdminMenu.php:98
+#: src/Core/Settings.php:272
+msgid "Payments · Fraud · Subscription · Identity · Sanction · KYC"
+msgstr ""
+
+#. translators: %s = link to the settings page
+#: src/Core/AdminMenu.php:103
+#, php-format
+msgid "Connect your store to get started — %s."
+msgstr ""
+
+#: src/Core/AdminMenu.php:104
+msgid "enter your API credentials"
+msgstr ""
+
+#: src/Core/AdminMenu.php:112
+msgid "Ready"
+msgstr ""
+
+#: src/Core/AdminMenu.php:113
+msgid "Soon"
+msgstr ""
+
+#: src/Core/AdminMenu.php:129
+msgid "WooCommerce card gateway · 3-D Secure · refunds"
+msgstr ""
+
+#: src/Core/AdminMenu.php:146
+#: src/Payment/Gateway.php:84
+msgid "API credentials"
+msgstr ""
+
+#: src/Core/AdminMenu.php:147
+msgid "WooCommerce active"
+msgstr ""
+
+#: src/Core/AdminMenu.php:154
+msgid "Test connection"
+msgstr ""
+
+#: src/Core/AdminMenu.php:157
+msgid "Add credentials"
+msgstr ""
+
+#: src/Core/AdminMenu.php:160
+msgid "Open WooCommerce gateway settings"
+msgstr ""
+
+#: src/Core/AdminMenu.php:180
+msgid "Connection successful — credentials are valid."
+msgstr ""
+
+#: src/Core/AdminMenu.php:182
+msgid "Connection failed: "
+msgstr ""
+
+#: src/Core/AdminMenu.php:202
+msgid "Module"
+msgstr ""
+
+#: src/Core/AdminMenu.php:206
+msgid "Coming soon"
+msgstr ""
+
+#: src/Core/AdminMenu.php:209
+msgid "coming soon"
+msgstr ""
+
+#: src/Core/Settings.php:279
+msgid "API Credentials"
+msgstr ""
+
+#: src/Core/Settings.php:281
+msgid "Environment"
+msgstr ""
+
+#: src/Core/Settings.php:283
+msgid "Live"
+msgstr ""
+
+#: src/Core/Settings.php:284
+msgid "Test"
+msgstr ""
+
+#: src/Core/Settings.php:288
+msgid "Key ID"
+msgstr ""
+
+#: src/Core/Settings.php:291
+msgid "Private Key (PEM)"
+msgstr ""
+
+#: src/Core/Settings.php:292
+#: src/Core/Settings.php:296
+#: src/Core/Settings.php:389
+msgid "Stored — leave blank to keep"
+msgstr ""
+
+#: src/Core/Settings.php:293
+msgid "Stored encrypted. Paste the private key from your Lunixi dashboard."
+msgstr ""
+
+#: src/Core/Settings.php:295
+msgid "Webhook Secret"
+msgstr ""
+
+#. translators: %s = webhook endpoint URL
+#: src/Core/Settings.php:297
+#, php-format
+msgid "Register this webhook URL in your Lunixi dashboard: %s"
+msgstr ""
+
+#: src/Core/Settings.php:299
+msgid "Base URL (optional)"
+msgstr ""
+
+#: src/Core/Settings.php:303
+msgid "Debug logging"
+msgstr ""
+
+#: src/Core/Settings.php:305
+msgid "Record diagnostic traces to WooCommerce → Status → Logs (source: lunixi)."
+msgstr ""
+
+#: src/Core/Settings.php:312
+msgid "Subscriptions — Customer portal"
+msgstr ""
+
+#: src/Core/Settings.php:313
+msgid "Used by the [lunixi_subscriptions] shortcode so customers can manage their subscriptions."
+msgstr ""
+
+#: src/Core/Settings.php:315
+msgid "Portal mode"
+msgstr ""
+
+#: src/Core/Settings.php:317
+msgid "Embedded (on your site)"
+msgstr ""
+
+#: src/Core/Settings.php:318
+msgid "Hosted (redirect to Lunixi)"
+msgstr ""
+
+#: src/Core/Settings.php:321
+msgid "Portal CDN URL"
+msgstr ""
+
+#: src/Core/Settings.php:323
+msgid "Serves the embedded portal SDK (loader + portal). Default is the Lunixi CDN; your store origin must be allow-listed for the portal."
+msgstr ""
+
+#: src/Core/Settings.php:325
+msgid "Hosted portal URL"
+msgstr ""
+
+#: src/Core/Settings.php:332
+msgid "KYC — Identity verification"
+msgstr ""
+
+#: src/Core/Settings.php:333
+msgid "Add the [lunixi_kyc] shortcode to a page so customers can verify, then configure gating below."
+msgstr ""
+
+#: src/Core/Settings.php:336
+msgid "Checkout gate"
+msgstr ""
+
+#: src/Core/Settings.php:338
+msgid "Require identity verification before checkout."
+msgstr ""
+
+#: src/Core/Settings.php:341
+msgid "Required level"
+msgstr ""
+
+#: src/Core/Settings.php:343
+msgid "Low"
+msgstr ""
+
+#: src/Core/Settings.php:343
+msgid "Substantial"
+msgstr ""
+
+#: src/Core/Settings.php:343
+msgid "High"
+msgstr ""
+
+#: src/Core/Settings.php:348
+msgid "Verification page"
+msgstr ""
+
+#: src/Core/Settings.php:352
+msgid "— Select —"
+msgstr ""
+
+#: src/Core/Settings.php:355
+msgid "The page containing [lunixi_kyc] — used for \"Verify to continue\" links."
+msgstr ""
+
+#: src/Core/Settings.php:357
+msgid "Role on verified"
+msgstr ""
+
+#: src/Core/Settings.php:358
+#: src/Marketplace/Admin.php:93
+msgid "— None —"
+msgstr ""
+
+#: src/Core/Settings.php:365
+msgid "Granted on VERIFIED, revoked on suspend/revoke/expire."
+msgstr ""
+
+#: src/Core/Settings.php:367
+msgid "Validity (days)"
+msgstr ""
+
+#: src/Core/Settings.php:375
+msgid "Automation — Event bridge"
+msgstr ""
+
+#: src/Core/Settings.php:376
+msgid "Forward WooCommerce events (order created/paid/cancelled, …) to your Lunixi automation flows. Register the site in your Lunixi dashboard to get the site id + shared secret."
+msgstr ""
+
+#: src/Core/Settings.php:378
+msgid "Enable"
+msgstr ""
+
+#: src/Core/Settings.php:380
+msgid "Send WooCommerce events to Lunixi automation."
+msgstr ""
+
+#: src/Core/Settings.php:390
+msgid "Stored encrypted. The HMAC key from your site registration."
+msgstr ""
+
+#: src/Core/Settings.php:394
+msgid "Save changes"
+msgstr ""
+
+#: src/Fraud/Admin.php:49
+msgid "Decisions · allow / deny lists"
+msgstr ""
+
+#. translators: %s = settings link
+#: src/Fraud/Admin.php:55
+#, php-format
+msgid "Connect your store to view fraud insights — %s."
+msgstr ""
+
+#: src/Fraud/Admin.php:56
+#: src/Kyc/Admin.php:61
+#: src/Marketplace/Admin.php:70
+#: src/Sanction/Admin.php:58
+#: src/Subscription/Admin.php:81
+msgid "add API credentials"
+msgstr ""
+
+#: src/Fraud/Admin.php:69
+#: src/Sanction/Admin.php:145
+msgid "Deny list"
+msgstr ""
+
+#: src/Fraud/Admin.php:78
+#: src/Marketplace/Admin.php:90
+msgid "Email"
+msgstr ""
+
+#: src/Fraud/Admin.php:79
+msgid "IP address"
+msgstr ""
+
+#: src/Fraud/Admin.php:80
+msgid "Card BIN"
+msgstr ""
+
+#: src/Fraud/Admin.php:81
+msgid "Card fingerprint"
+msgstr ""
+
+#: src/Fraud/Admin.php:86
+msgid "Value to block"
+msgstr ""
+
+#: src/Fraud/Admin.php:87
+#: src/Sanction/Admin.php:151
+msgid "Add to deny list"
+msgstr ""
+
+#: src/Fraud/Admin.php:97
+#: src/Sanction/Admin.php:160
+msgid "No deny-list entries."
+msgstr ""
+
+#: src/Fraud/Admin.php:100
+#: src/Kyc/Admin.php:79
+#: src/Sanction/Admin.php:96
+#: src/Sanction/Admin.php:162
+msgid "Type"
+msgstr ""
+
+#: src/Fraud/Admin.php:100
+msgid "Value"
+msgstr ""
+
+#: src/Fraud/Admin.php:112
+msgid "Remove this entry?"
+msgstr ""
+
+#: src/Fraud/Admin.php:117
+msgid "Remove"
+msgstr ""
+
+#: src/Fraud/Admin.php:136
+msgid "Recent decisions"
+msgstr ""
+
+#: src/Fraud/Admin.php:139
+msgid "No fraud decisions yet."
+msgstr ""
+
+#: src/Fraud/Admin.php:142
+#: src/Kyc/Admin.php:79
+#: src/Kyc/OrderSnapshot.php:88
+msgid "Decision"
+msgstr ""
+
+#: src/Fraud/Admin.php:142
+#: src/Fraud/OrderInsights.php:112
+#: src/Sanction/Admin.php:96
+msgid "Score"
+msgstr ""
+
+#: src/Fraud/Admin.php:142
+msgid "Payment"
+msgstr ""
+
+#: src/Fraud/Admin.php:142
+#: src/Fraud/OrderInsights.php:114
+msgid "Reasons"
+msgstr ""
+
+#: src/Fraud/Admin.php:142
+#: src/Fraud/OrderInsights.php:117
+msgid "Trace"
+msgstr ""
+
+#: src/Fraud/Admin.php:177
+#: src/Sanction/Admin.php:208
+msgid "Added to deny list."
+msgstr ""
+
+#: src/Fraud/Admin.php:179
+msgid "Please provide a value."
+msgstr ""
+
+#: src/Fraud/Admin.php:185
+msgid "Entry removed."
+msgstr ""
+
+#: src/Fraud/Admin.php:189
+#: src/Marketplace/Admin.php:212
+#: src/Sanction/Admin.php:212
+#: src/Subscription/Admin.php:297
+msgid "Action failed: "
+msgstr ""
+
+#. translators: 1: decision, 2: score, 3: reason codes
+#: src/Fraud/OrderInsights.php:76
+#, php-format
+msgid "Lunixi fraud: %1$s (score %2$s)%3$s."
+msgstr ""
+
+#: src/Fraud/OrderInsights.php:90
+msgid "Lunixi fraud"
+msgstr ""
+
+#: src/Fraud/OrderInsights.php:100
+#: src/Payment/OrderMetaBox.php:49
+msgid "Not a Lunixi payment."
+msgstr ""
+
+#: src/Fraud/OrderInsights.php:105
+msgid "No fraud decision recorded yet."
+msgstr ""
+
+#: src/Kyc/Admin.php:55
+msgid "Identity verification · sessions"
+msgstr ""
+
+#. translators: %s = settings link
+#: src/Kyc/Admin.php:60
+#, php-format
+msgid "Connect your store to view verification sessions — %s."
+msgstr ""
+
+#: src/Kyc/Admin.php:74
+msgid "Recent sessions"
+msgstr ""
+
+#: src/Kyc/Admin.php:76
+msgid "No verification sessions yet."
+msgstr ""
+
+#: src/Kyc/Admin.php:79
+#: src/Kyc/OrderSnapshot.php:89
+msgid "Session"
+msgstr ""
+
+#: src/Kyc/Admin.php:79
+msgid "User"
+msgstr ""
+
+#: src/Kyc/Admin.php:79
+msgid "Expires"
+msgstr ""
+
+#: src/Kyc/GateShortcode.php:65
+#: src/Kyc/Gating.php:153
+msgid "Verify now"
+msgstr ""
+
+#: src/Kyc/GateShortcode.php:67
+msgid "This content requires identity verification."
+msgstr ""
+
+#: src/Kyc/Gating.php:98
+msgid "✓ Your identity is verified."
+msgstr ""
+
+#: src/Kyc/Gating.php:102
+msgid "Your verification is under review."
+msgstr ""
+
+#: src/Kyc/Gating.php:108
+msgid "Verify your identity"
+msgstr ""
+
+#. translators: %s = verification page URL
+#: src/Kyc/Gating.php:152
+#, php-format
+msgid "Please verify your identity before checking out. %s"
+msgstr ""
+
+#: src/Kyc/Gating.php:156
+msgid "Please verify your identity before checking out."
+msgstr ""
+
+#: src/Kyc/KycController.php:62
+#: src/Kyc/KycController.php:119
+msgid "Verification is unavailable right now."
+msgstr ""
+
+#: src/Kyc/KycController.php:101
+msgid "Could not start verification."
+msgstr ""
+
+#: src/Kyc/KycController.php:114
+msgid "No active verification session."
+msgstr ""
+
+#: src/Kyc/KycController.php:128
+msgid "Could not initialise verification."
+msgstr ""
+
+#: src/Kyc/OrderSnapshot.php:60
+msgid "Lunixi KYC (at order time)"
+msgstr ""
+
+#: src/Kyc/OrderSnapshot.php:74
+msgid "No verification snapshot for this order."
+msgstr ""
+
+#: src/Kyc/OrderSnapshot.php:86
+#: src/Payment/OrderMetaBox.php:87
+msgid "State"
+msgstr ""
+
+#: src/Kyc/OrderSnapshot.php:90
+msgid "Captured"
+msgstr ""
+
+#: src/Kyc/Reconciler.php:60
+#: src/Subscription/Reconciler.php:60
+msgid "Hourly (Lunixi)"
+msgstr ""
+
+#: src/Kyc/Shortcode.php:63
+msgid "Log in to continue."
+msgstr ""
+
+#: src/Kyc/Shortcode.php:73
+msgid "Identity verified"
+msgstr ""
+
+#: src/Kyc/Shortcode.php:77
+msgid "Your verification is under review. Please check back later."
+msgstr ""
+
+#: src/Kyc/Shortcode.php:97
+msgid "Verification could not be loaded."
+msgstr ""
+
+#: src/Kyc/Shortcode.php:98
+msgid "Could not start verification. Please try again."
+msgstr ""
+
+#: src/Marketplace/Admin.php:48
+#: src/Marketplace/Admin.php:63
+msgid "Marketplace"
+msgstr ""
+
+#: src/Marketplace/Admin.php:50
+msgid "Sub-dealer (altbayi) split payments, onboarding and payouts."
+msgstr ""
+
+#: src/Marketplace/Admin.php:63
+msgid "Sub-dealers · onboarding · payouts"
+msgstr ""
+
+#. translators: %s = settings link
+#: src/Marketplace/Admin.php:69
+#, php-format
+msgid "Connect your store to manage sub-dealers — %s."
+msgstr ""
+
+#: src/Marketplace/Admin.php:84
+msgid "Add sub-dealer"
+msgstr ""
+
+#: src/Marketplace/Admin.php:88
+msgid "Legal name"
+msgstr ""
+
+#: src/Marketplace/Admin.php:89
+msgid "Tax ID"
+msgstr ""
+
+#: src/Marketplace/Admin.php:91
+msgid "Company"
+msgstr ""
+
+#: src/Marketplace/Admin.php:91
+msgid "Individual"
+msgstr ""
+
+#: src/Marketplace/Admin.php:92
+msgid "Link to WP user (vendor):"
+msgstr ""
+
+#: src/Marketplace/Admin.php:95
+msgid "Create sub-dealer"
+msgstr ""
+
+#: src/Marketplace/Admin.php:108
+msgid "Sub-dealers"
+msgstr ""
+
+#: src/Marketplace/Admin.php:110
+msgid "No sub-dealers yet."
+msgstr ""
+
+#: src/Marketplace/Admin.php:113
+msgid "Name"
+msgstr ""
+
+#: src/Marketplace/Admin.php:113
+msgid "WP user"
+msgstr ""
+
+#: src/Marketplace/Admin.php:113
+msgid "Onboarding"
+msgstr ""
+
+#: src/Marketplace/Admin.php:128
+msgid "Get link"
+msgstr ""
+
+#: src/Marketplace/Admin.php:148
+msgid "Payout ledger"
+msgstr ""
+
+#: src/Marketplace/Admin.php:150
+msgid "Dealer"
+msgstr ""
+
+#: src/Marketplace/Admin.php:150
+msgid "Net"
+msgstr ""
+
+#: src/Marketplace/Admin.php:150
+msgid "Valor"
+msgstr ""
+
+#: src/Marketplace/Admin.php:202
+msgid "Sub-dealer created."
+msgstr ""
+
+#: src/Marketplace/Admin.php:208
+msgid "Onboarding link:"
+msgstr ""
+
+#: src/Marketplace/OnboardingShortcode.php:47
+msgid "Log in to onboard as a vendor."
+msgstr ""
+
+#: src/Marketplace/OnboardingShortcode.php:52
+msgid "You are not a registered vendor yet. Please contact the store."
+msgstr ""
+
+#: src/Marketplace/OnboardingShortcode.php:57
+msgid "Onboarding is unavailable right now. Please try again later."
+msgstr ""
+
+#: src/Marketplace/OnboardingShortcode.php:64
+msgid "Continue onboarding"
+msgstr ""
+
+#: src/Marketplace/OnboardingShortcode.php:75
+msgid "Onboarding could not be loaded."
+msgstr ""
+
+#: src/Marketplace/WooProductVendor.php:27
+msgid "— Platform (no vendor) —"
+msgstr ""
+
+#: src/Marketplace/WooProductVendor.php:42
+msgid "Lunixi vendor"
+msgstr ""
+
+#: src/Marketplace/WooProductVendor.php:43
+msgid "The vendor (sub-dealer) this product pays out to in a marketplace split. Vendors are WP users linked to a sub-dealer under Lunixi → Marketplace."
+msgstr ""
+
+#: src/Payment/BlocksSupport.php:66
+#: src/Payment/Gateway.php:42
+#: src/Payment/Gateway.php:64
+#: assets/js/blocks.js:33
+msgid "Credit / Debit Card"
+msgstr ""
+
+#: src/Payment/Gateway.php:34
+msgid "Accept cards via Lunixi (3-D Secure, instalments, refunds)."
+msgstr ""
+
+#: src/Payment/Gateway.php:55
+msgid "Enable/Disable"
+msgstr ""
+
+#: src/Payment/Gateway.php:57
+msgid "Enable Lunixi payments"
+msgstr ""
+
+#: src/Payment/Gateway.php:61
+#: src/Sanction/Admin.php:127
+msgid "Title"
+msgstr ""
+
+#: src/Payment/Gateway.php:63
+msgid "Payment method title shown at checkout."
+msgstr ""
+
+#: src/Payment/Gateway.php:68
+msgid "Description"
+msgstr ""
+
+#: src/Payment/Gateway.php:73
+msgid "Capture"
+msgstr ""
+
+#: src/Payment/Gateway.php:76
+msgid "Capture immediately (recommended)"
+msgstr ""
+
+#: src/Payment/Gateway.php:77
+msgid "Pre-authorization (preauth): hold now, capture later"
+msgstr ""
+
+#: src/Payment/Gateway.php:80
+msgid "Pre-authorization places a hold; capture it by setting the order to Completed, or release it by cancelling the order."
+msgstr ""
+
+#. translators: %s = link to the Lunixi settings page
+#: src/Payment/Gateway.php:88
+#, php-format
+msgid "Set your API credentials on the %s screen."
+msgstr ""
+
+#: src/Payment/Gateway.php:113
+msgid "Payment is temporarily unavailable. Please try again later."
+msgstr ""
+
+#. translators: 1: intent id, 2: capture mode
+#: src/Payment/Gateway.php:153
+#, php-format
+msgid "Lunixi: payment initiated (intent %1$s, %2$s)."
+msgstr ""
+
+#: src/Payment/Gateway.php:155
+msgid "preauth"
+msgstr ""
+
+#: src/Payment/Gateway.php:155
+msgid "sale"
+msgstr ""
+
+#: src/Payment/Gateway.php:171
+msgid "Could not start the payment. Please try again."
+msgstr ""
+
+#: src/Payment/Gateway.php:195
+msgid "Payment session could not be started. Please return to checkout."
+msgstr ""
+
+#: src/Payment/Gateway.php:218
+msgid "Order not found."
+msgstr ""
+
+#: src/Payment/Gateway.php:222
+msgid "This order has no Lunixi payment to refund."
+msgstr ""
+
+#. translators: 1: amount, 2: resulting status
+#: src/Payment/Gateway.php:234
+#, php-format
+msgid "Lunixi refund processed (%1$s) — status %2$s."
+msgstr ""
+
+#: src/Payment/Gateway.php:235
+msgid "full"
+msgstr ""
+
+#. translators: %s = resulting status
+#: src/Payment/OrderActions.php:56
+#, php-format
+msgid "Lunixi: capture requested on completion — status %s."
+msgstr ""
+
+#. translators: %s = error message
+#: src/Payment/OrderActions.php:64
+#, php-format
+msgid "Lunixi: capture failed — %s."
+msgstr ""
+
+#. translators: %s = resulting status
+#: src/Payment/OrderActions.php:96
+#, php-format
+msgid "Lunixi: void requested on cancellation — status %s."
+msgstr ""
+
+#. translators: %s = error message
+#: src/Payment/OrderActions.php:104
+#, php-format
+msgid "Lunixi: void failed — %s."
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:34
+msgid "Lunixi payment"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:55
+msgid "No payment has been initiated for this order yet."
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:70
+#: src/Payment/OrderSync.php:284
+msgid "3-D Secure"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:72
+msgid "Non-secure (2D)"
+msgstr ""
+
+#. translators: %d = number of instalments
+#: src/Payment/OrderMetaBox.php:78
+#, php-format
+msgid "%dx instalments"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:80
+msgid "Single payment"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:86
+msgid "Intent"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:88
+msgid "Security"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:89
+msgid "Instalment"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:90
+msgid "Provider"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:91
+msgid "Last event"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:92
+msgid "Last update"
+msgstr ""
+
+#. translators: %s = dispute state
+#: src/Payment/OrderMetaBox.php:107
+#, php-format
+msgid "⚠ Dispute open: %s"
+msgstr ""
+
+#: src/Payment/OrderMetaBox.php:108
+msgid "chargeback"
+msgstr ""
+
+#. translators: 1: formatted amount, 2: secure/installment/provider fragment
+#: src/Payment/OrderSync.php:91
+#, php-format
+msgid "Lunixi: payment captured — %1$s%2$s."
+msgstr ""
+
+#. translators: 1: this capture, 2: cumulative, 3: remaining
+#: src/Payment/OrderSync.php:107
+#, php-format
+msgid "Lunixi: partial capture — %1$s (captured %2$s, remaining %3$s)."
+msgstr ""
+
+#. translators: 1: amount, 2: secure/installment/provider fragment
+#: src/Payment/OrderSync.php:128
+#, php-format
+msgid "Lunixi: payment authorized (awaiting capture) — %1$s%2$s."
+msgstr ""
+
+#. translators: %s = error code
+#: src/Payment/OrderSync.php:147
+#, php-format
+msgid "Lunixi: payment failed%s."
+msgstr ""
+
+#: src/Payment/OrderSync.php:183
+msgid "Lunixi refund (gateway)"
+msgstr ""
+
+#. translators: 1: this refund, 2: cumulative refunded, 3: refund id
+#: src/Payment/OrderSync.php:192
+#, php-format
+msgid "Lunixi: refund processed — %1$s (total refunded %2$s)%3$s."
+msgstr ""
+
+#. translators: %s = amount
+#: src/Payment/OrderSync.php:208
+#, php-format
+msgid "Lunixi: authorization voided — %s."
+msgstr ""
+
+#. translators: %s = amount
+#: src/Payment/OrderSync.php:222
+#, php-format
+msgid "Lunixi: authorization expired — %s."
+msgstr ""
+
+#. translators: 1: dispute state, 2: amount, 3: chargeback id, 4: open count
+#: src/Payment/OrderSync.php:241
+#, php-format
+msgid "Lunixi: dispute %1$s — %2$s [chargeback %3$s, %4$d open]."
+msgstr ""
+
+#: src/Payment/OrderSync.php:284
+msgid "non-secure (2D)"
+msgstr ""
+
+#. translators: %d = number of instalments
+#: src/Payment/OrderSync.php:287
+#, php-format
+msgid "%d instalments"
+msgstr ""
+
+#: src/Payment/Reconciler.php:60
+msgid "Every 15 minutes (Lunixi)"
+msgstr ""
+
+#. translators: %s = payment status
+#: src/Payment/Reconciler.php:130
+#, php-format
+msgid "Lunixi: settled by reconciliation (webhook missed) — %s."
+msgstr ""
+
+#: src/Payment/Reconciler.php:139
+msgid "Lunixi: marked failed by reconciliation (webhook missed)."
+msgstr ""
+
+#: src/Payment/Reconciler.php:146
+msgid "Lunixi: cancelled by reconciliation (webhook missed)."
+msgstr ""
+
+#: src/Sanction/Admin.php:51
+msgid "Watchlist screening · monitoring · deny list"
+msgstr ""
+
+#. translators: %s = settings link
+#: src/Sanction/Admin.php:57
+#, php-format
+msgid "Connect your store to screen entities — %s."
+msgstr ""
+
+#: src/Sanction/Admin.php:72
+msgid "Screen a name"
+msgstr ""
+
+#: src/Sanction/Admin.php:76
+msgid "Full name"
+msgstr ""
+
+#: src/Sanction/Admin.php:77
+msgid "Country (ISO)"
+msgstr ""
+
+#: src/Sanction/Admin.php:78
+#: src/Sanction/Admin.php:149
+msgid "Person"
+msgstr ""
+
+#: src/Sanction/Admin.php:78
+#: src/Sanction/Admin.php:149
+msgid "Organization"
+msgstr ""
+
+#: src/Sanction/Admin.php:80
+msgid "Sanctions"
+msgstr ""
+
+#: src/Sanction/Admin.php:80
+msgid "Sanctions + PEP"
+msgstr ""
+
+#: src/Sanction/Admin.php:80
+msgid "Full risk"
+msgstr ""
+
+#: src/Sanction/Admin.php:83
+msgid "Screen"
+msgstr ""
+
+#. translators: %s = name
+#: src/Sanction/Admin.php:90
+#, php-format
+msgid "Result for \"%s\":"
+msgstr ""
+
+#: src/Sanction/Admin.php:92
+msgid "CLEAR — no matches"
+msgstr ""
+
+#. translators: %d = count
+#: src/Sanction/Admin.php:93
+#, php-format
+msgid "%d potential match(es)"
+msgstr ""
+
+#: src/Sanction/Admin.php:96
+msgid "Matched name"
+msgstr ""
+
+#: src/Sanction/Admin.php:96
+msgid "List"
+msgstr ""
+
+#: src/Sanction/Admin.php:125
+msgid "Monitoring alerts"
+msgstr ""
+
+#: src/Sanction/Admin.php:127
+msgid "Severity"
+msgstr ""
+
+#: src/Sanction/Admin.php:127
+#: src/Sanction/Admin.php:162
+msgid "Reason"
+msgstr ""
+
+#: src/Sanction/Admin.php:150
+msgid "Name to block"
+msgstr ""
+
+#: src/Sanction/Admin.php:162
+msgid "Label"
+msgstr ""
+
+#: src/Subscription/Admin.php:62
+#: src/Subscription/Admin.php:97
+msgid "Subscriptions"
+msgstr ""
+
+#: src/Subscription/Admin.php:63
+msgid "Recurring billing · plans · invoices"
+msgstr ""
+
+#. translators: %s = settings link
+#: src/Subscription/Admin.php:80
+#, php-format
+msgid "Connect your store to manage subscriptions — %s."
+msgstr ""
+
+#: src/Subscription/Admin.php:100
+msgid "No subscriptions yet. They appear here as customers subscribe (and via webhooks)."
+msgstr ""
+
+#: src/Subscription/Admin.php:103
+msgid "Reference"
+msgstr ""
+
+#: src/Subscription/Admin.php:103
+msgid "Customer"
+msgstr ""
+
+#: src/Subscription/Admin.php:103
+#: src/Subscription/Admin.php:160
+#: src/Subscription/Admin.php:244
+msgid "Plan"
+msgstr ""
+
+#: src/Subscription/Admin.php:103
+#: src/Subscription/Admin.php:163
+msgid "Next billing"
+msgstr ""
+
+#: src/Subscription/Admin.php:103
+#: src/Subscription/Admin.php:161
+#: src/Subscription/Admin.php:207
+msgid "Amount"
+msgstr ""
+
+#: src/Subscription/Admin.php:139
+msgid "All subscriptions"
+msgstr ""
+
+#: src/Subscription/Admin.php:147
+msgid "Could not load subscription: "
+msgstr ""
+
+#: src/Subscription/Admin.php:159
+msgid "Subscription ID"
+msgstr ""
+
+#: src/Subscription/Admin.php:162
+msgid "Current period"
+msgstr ""
+
+#: src/Subscription/Admin.php:164
+msgid "Collection"
+msgstr ""
+
+#: src/Subscription/Admin.php:175
+msgid "Resume"
+msgstr ""
+
+#: src/Subscription/Admin.php:177
+msgid "Pause"
+msgstr ""
+
+#: src/Subscription/Admin.php:179
+msgid "Cancel at period end"
+msgstr ""
+
+#: src/Subscription/Admin.php:181
+msgid "This subscription is in a terminal state."
+msgstr ""
+
+#: src/Subscription/Admin.php:201
+msgid "Invoices"
+msgstr ""
+
+#: src/Subscription/Admin.php:204
+msgid "No invoices yet."
+msgstr ""
+
+#: src/Subscription/Admin.php:207
+msgid "Number"
+msgstr ""
+
+#: src/Subscription/Admin.php:207
+msgid "Period"
+msgstr ""
+
+#: src/Subscription/Admin.php:238
+msgid "Plans"
+msgstr ""
+
+#: src/Subscription/Admin.php:241
+msgid "No plans yet. Create plans in your Lunixi dashboard."
+msgstr ""
+
+#: src/Subscription/Admin.php:244
+msgid "Code"
+msgstr ""
+
+#: src/Subscription/Admin.php:244
+msgid "Price"
+msgstr ""
+
+#: src/Subscription/Admin.php:244
+msgid "Trial"
+msgstr ""
+
+#: src/Subscription/Admin.php:244
+msgid "Active"
+msgstr ""
+
+#. translators: %d days
+#: src/Subscription/Admin.php:254
+#, php-format
+msgid "%d days"
+msgstr ""
+
+#: src/Subscription/Admin.php:275
+msgid "Invalid request."
+msgstr ""
+
+#: src/Subscription/Admin.php:285
+msgid "Subscription paused."
+msgstr ""
+
+#: src/Subscription/Admin.php:289
+msgid "Subscription resumed."
+msgstr ""
+
+#: src/Subscription/Admin.php:293
+msgid "Subscription set to cancel at period end."
+msgstr ""
+
+#: src/Subscription/Admin.php:309
+msgid "Are you sure?"
+msgstr ""
+
+#: src/Subscription/PortalController.php:79
+msgid "Subscriptions are unavailable right now."
+msgstr ""
+
+#: src/Subscription/PortalController.php:88
+msgid "Could not start the subscription portal."
+msgstr ""
+
+#: src/Subscription/Shortcode.php:49
+msgid "Log in to manage your subscriptions."
+msgstr ""
+
+#: src/Subscription/Shortcode.php:71
+msgid "The subscription portal could not be loaded."
+msgstr ""
+
+#: src/Subscription/Shortcode.php:72
+msgid "Could not load your subscriptions. Please try again."
+msgstr ""
+
+#: src/Subscription/Shortcode.php:85
+msgid "Manage my subscriptions"
+msgstr ""
+
+#: src/Subscription/SubscriptionStore.php:38
+msgid "Lunixi Subscriptions"
+msgstr ""
+
+#: src/Subscription/WooProduct.php:29
+msgid "— Not a Lunixi subscription —"
+msgstr ""
+
+#: src/Subscription/WooProduct.php:37
+msgid "Lunixi subscription plan"
+msgstr ""
+
+#: src/Subscription/WooProduct.php:38
+msgid "Sell this product as a recurring Lunixi subscription on the selected plan. Billing is handled by Lunixi."
+msgstr ""
+
+#: src/Subscription/WooSubscribe.php:75
+msgid "Subscribe"
+msgstr ""
