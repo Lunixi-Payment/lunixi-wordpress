@@ -15,7 +15,7 @@ Use PHP 8.2+ CLI with sodium, mysqli, curl, JSON and proc_open; Node.js; an isol
 MariaDB database and official WP-CLI. PHP 8.4.1, WordPress 7.1.4, WooCommerce 11.2.1,
 MariaDB 11 and the public PHP SDK 0.28.1 floor were actually exercised.
 
-Candidate 0.2.7 results: **58 native checks in CPT + 58 in HPOS with datastore
+Earlier core candidate 0.2.7 results: **58 native checks in CPT + 58 in HPOS with datastore
 caching enabled**, including three real two-process races per storage mode;
 The initial core follow-up had **34 isolated PHPUnit tests / 197 assertions**;
 the final explicit split-refund evidence regression brings this to **35 / 203**.
@@ -176,3 +176,9 @@ gizli tutun. Tarayıcı dönüşü ödeme kanıtı değildir. Taksit/prim farkı
 sunucunun kanonik özgün tutarıyla açıklanır; alan yoksa fark mutabakat bekler.
 Kanıt olarak yalnız temiz JSON'u saklayın; geçici özel dosyaları ve kendi test
 kurulumunuzu kaldırın. Anahtar, token, çerez veya yanıt gövdesini yayımlamayın.
+
+## Final scoped installer publication
+
+[Release 0.2.7](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/tag/v0.2.7) and [passing CI](https://github.com/Lunixi-Payment/lunixi-wordpress/actions/runs/41243895958) publish the standalone SDK 0.29.6 package. All **365** downloaded files match the final native-tested scoped ZIP byte for byte. Public checksum, GitHub digest and ZIP CRC match; default artifact Gitleaks has zero findings. SHA-256: `97617381478ad984a42c5bd546598ddb480185693c7fdcb6b633ec81a492a8e1`. CI also linted all **345 bundled PHP files on PHP 7.4**, separately from source syntax checks on PHP 7.4–8.4.
+
+The final scoped ZIP's focused actual HPOS run exercised create/resume/form mount, authenticated GET/capture, signed replay and one stock effect. Complete split parent paid once; partial, leg and missing-refund cases stayed unpaid. The final unit suite passed **35 tests / 203 assertions**. These focused checks do not claim a rerun of the 116 earlier core checks, a PHP 7.4 native store, a real bank/card/3DS flow or WordPress.org certification.
