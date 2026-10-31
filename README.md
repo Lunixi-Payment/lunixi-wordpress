@@ -66,12 +66,13 @@ mod seçicisi yoktur. Abonelik portalı ve alt bayi kayıt bağlantıları ayrı
 
 This repository is the plugin's source. The plugin loads the
 [Lunixi PHP SDK](https://github.com/Lunixi-Payment/lunixi-php) from its
-`vendor/` folder, so install the dependencies with Composer. Pick the latest
-version from [tags](https://github.com/Lunixi-Payment/lunixi-wordpress/tags):
+`vendor/` folder, so install the dependencies with Composer. **v0.2.6 is published
+as a [GitHub source tag](https://github.com/Lunixi-Payment/lunixi-wordpress/tree/v0.2.6)**;
+this does not establish WordPress.org directory publication or certification.
 
 ```bash
 cd wp-content/plugins
-git clone --branch vX.Y.Z https://github.com/Lunixi-Payment/lunixi-wordpress.git lunixi
+git clone --branch v0.2.6 https://github.com/Lunixi-Payment/lunixi-wordpress.git lunixi
 cd lunixi
 composer install --no-dev
 ```
@@ -82,13 +83,13 @@ the whole `lunixi` folder to `wp-content/plugins`. Then activate
 
 ## Upgrade to 0.2.6
 
-The 0.2.6 patch is prepared source until its release is reviewed and published; it is not a WordPress.org approval claim. Older pending orders keep their original payment, token and idempotency key. Their saved `_lunixi_checkout_script` is parsed as data and mounted through WordPress script enqueueing; the original HTML/JavaScript is never printed or evaluated. Existing new-format metadata takes precedence and is not rewritten. Available methods, multi-card and insurance options remain in the original form configuration.
+The [0.2.6 source release](https://github.com/Lunixi-Payment/lunixi-wordpress/tree/v0.2.6) is published at commit `8db7f9ba7471c4c6cd0c971eeba9ea6d0770175b`; this is not a WordPress.org approval claim. Older pending orders keep their original payment, token and idempotency key. Their saved `_lunixi_checkout_script` is parsed as data and mounted through WordPress script enqueueing; the original HTML/JavaScript is never printed or evaluated. Existing new-format metadata takes precedence and is not rewritten. Available methods, multi-card and insurance options remain in the original form configuration.
 
 Invalid, partial or conflicting saved checkout data stays on reconciliation hold. Retrying checkout for any retained attempt cannot allocate another intent or key. Native paid/authorized/failed holds remain in force. No browser request migrates financial state or marks an order paid. Keep the existing metadata through reconciliation; do not clear it to bypass the hold.
 
-The SDK stays on the 0.28.x line with constraint `^0.28.1` and the verified minimum version **0.28.1**; this metadata correction does not upgrade the SDK minor line. The parser consumes the existing `CheckoutIntent::checkoutFormContent()` contract. Focused tests use native-API doubles and generated fixtures, not a full WordPress/WooCommerce merchant acceptance environment. Complete your existing store's HTTPS TEST checkout/webhook acceptance before deployment.
+The SDK stays on the 0.28.x line with constraint `^0.28.1` and the verified minimum version **0.28.1**; this metadata correction does not upgrade the SDK minor line. The parser consumes the existing `CheckoutIntent::checkoutFormContent()` contract. **19 focused tests / 124 assertions** passed using native-API doubles and generated fixtures, not a full WordPress/WooCommerce merchant acceptance environment. Complete your existing store's HTTPS TEST checkout/webhook acceptance before deployment.
 
-**Türkçe:** 0.2.6 inceleme/yayın için hazırlanmış kaynak sürümdür. Geçerli eski form kaydı aynı ödeme, token ve anahtarla yalnız veri olarak okunur; ham HTML çalıştırılmaz, yeni metadata veya finansal durum yazılmaz. Geçersiz ya da çakışan kayıt mutabakat bekletmesine alınır; tekrar checkout yeni ödeme/anahtar üretemez. Mevcut yöntem, çoklu kart ve sigorta ayarları korunur. SDK 0.28 serisinde kalır; bağımlılık doğrulanmış en düşük sürüm olan `^0.28.1` olarak tanımlanır; canlı mağaza kabulü bu odaklı uyumluluk kontrolünün parçası değildir.
+**Türkçe:** 0.2.6 GitHub kaynak etiketi yayımlandı; bu, WordPress.org yayını veya onayı değildir. Geçerli eski form kaydı aynı ödeme, token ve anahtarla yalnız veri olarak okunur; ham HTML çalıştırılmaz, yeni metadata veya finansal durum yazılmaz. Geçersiz ya da çakışan kayıt mutabakat bekletmesine alınır; tekrar checkout yeni ödeme/anahtar üretemez. Mevcut yöntem, çoklu kart ve sigorta ayarları korunur. SDK 0.28 serisinde kalır; bağımlılık doğrulanmış en düşük sürüm olan `^0.28.1` olarak tanımlanır. 19 odaklı test / 124 doğrulama geçti; canlı mağaza kabulü bu kontrolün parçası değildir.
 
 ## Setup
 
