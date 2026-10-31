@@ -56,7 +56,7 @@ final class WooSubscribe
         if (!WooProduct::isSubscriptionProduct($product)) {
             return;
         }
-        echo $this->button($product, true); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo wp_kses_post($this->button($product, true));
     }
 
     /**

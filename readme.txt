@@ -4,7 +4,7 @@ Tags: payment gateway, woocommerce, sanal pos, 3d secure, taksit
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.2.5
+Stable tag: 0.2.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,8 @@ Connect the virtual POS accounts you already have and take card payments through
 
 = Payments =
 
+The existing Lunixi Checkout form is mounted on your store's own WooCommerce order-pay page. A redirect to pay.lunixi.com is not required for this payment flow. Enabled methods and multi-card eligibility follow your Lunixi form settings; the payment gateway has no embedded/hosted mode selector. Subscription portal and marketplace onboarding links are separate features. A bank/3D Secure step can still require navigation.
+
 * **Card payments with 3D Secure** on the classic and the block-based WooCommerce checkout, compatible with High-Performance Order Storage (HPOS).
 * **Installments (taksit):** the customer chooses the number of installments on the checkout form, with the options your banks offer.
 * **More payment methods:** the checkout shows every method you enable in your Lunixi form settings and connect a provider for.
@@ -39,6 +41,8 @@ Turn on only what you need: fraud screening, subscriptions, identity (multi-acco
 = Türkçe =
 
 **Lunixi** bir ödeme altyapısıdır. Bu eklenti WooCommerce mağazanıza Lunixi'yi ödeme yöntemi olarak ekler ve mağazanızı tek bir entegrasyonla **sanal POS veren tüm bankalara** ve ödeme kuruluşlarına bağlar.
+
+Mevcut Lunixi Checkout formu mağazanızın kendi WooCommerce sipariş ödeme sayfasına yerleştirilir; bu akış için pay.lunixi.com yönlendirmesi gerekmez. Yöntemler ve çoklu kart uygunluğu Lunixi form ayarlarından gelir; ödeme eklentisinde gömülü/yönlendirmeli mod seçicisi yoktur. Abonelik portalı ve alt bayi kayıt bağlantıları ayrı özelliklerdir. Gerektiğinde banka/3D Secure adımı yönlendirme yapabilir.
 
 * **Tüm bankalar, tek POS:** Türkiye'de sanal POS veren tüm bankalar; örneğin Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB, VakıfBank, Yapı Kredi ve Ziraat Bankası (Ziraat Payflex dahil). Ödeme kuruluşlarından iyzico, Moka, Paycell, Paynkolay ve RubikPara. Bankanız henüz bağlı değilse bize talep iletin, ekleyelim.
 * **Akıllı yönlendirme:** Lunixi her ödeme için bağlı sağlayıcılardan en uygununu seçer; sağlayıcı yanıt vermezse ödemeyi sıradakine aktarır. Yetersiz bakiye gibi retler yeniden denenmez.
@@ -79,6 +83,13 @@ The payment gateway requires WooCommerce. Other services work on plain WordPress
 The card form is rendered and tokenised by Lunixi's JS SDK; card data never reaches your server.
 
 == Changelog ==
+
+= 0.2.6 =
+* Mount the existing merchant-site checkout using parsed SDK URL/config data and WordPress script enqueueing instead of printing gateway HTML.
+* Resume valid pre-upgrade `_lunixi_checkout_script` records with the same payment, token and attempt key; no order metadata migration or new payment is performed.
+* Hold invalid, incomplete or conflicting saved sessions for reconciliation; repeated checkout never allocates a fresh attempt for these orders.
+* Keep existing form method/insurance settings and newer stored metadata intact. Failed, authorized and paid orders do not reopen a payment form.
+* Filter the subscription button markup and update plugin URI/translation metadata. The PHP SDK stays on the 0.28 series with verified minimum 0.28.1 (`^0.28.1`); no SDK minor-series upgrade.
 
 = 0.2.5 =
 * Plugin name is now "Lunixi" (slug `lunixi`) for the WordPress.org plugin directory.

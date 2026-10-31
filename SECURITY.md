@@ -8,7 +8,7 @@ or discussions.
 Email **developer@lunixi.com** with the subject line
 `Security: Lunixi for WordPress` and include:
 
-- the package version (`lunixi/woocommerce`) and your runtime version,
+- the plugin version (`lunixi`) and your WordPress, WooCommerce and PHP versions,
 - what an attacker could do and what is needed to do it,
 - steps or a minimal example that shows the problem.
 
@@ -16,8 +16,8 @@ Leave real API keys, private keys, webhook secrets, tokens and customer data
 out of the report. If an example needs a key, use a test key you can revoke.
 
 We reply to confirm we received the report and keep you informed while we
-work on it. Fixes are released as a new version of this package and listed in
-[CHANGELOG.md](CHANGELOG.md).
+work on it. Fixes are released as a new version of this plugin and listed in
+the [WordPress release history](readme.txt), under **Changelog**.
 
 ## Supported versions
 

@@ -19,6 +19,14 @@ payment institutions, with
 3D Secure, installments (taksit), pre-authorization, refunds and order status
 from signed webhooks.
 
+The payment form opens on your own WooCommerce **order-pay page**. The plugin
+loads the existing Lunixi Checkout SDK and mounts the form there; the normal
+payment flow does not redirect the buyer to `pay.lunixi.com`. Enabled payment
+methods and multi-card eligibility come from your Lunixi form settings. The
+payment gateway has no embedded/hosted selector. Subscription portal and
+marketplace onboarding links are separate features; bank/3D Secure navigation
+may still occur when required.
+
 - **All banks, one POS:** every bank in Türkiye that offers a virtual POS,
   including Akbank, Denizbank, Garanti BBVA, Halkbank, İş Bankası, QNB,
   VakıfBank, Yapı Kredi and Ziraat Bankası (including Ziraat Payflex). If your
@@ -37,6 +45,13 @@ entegrasyonla sanal POS veren tüm bankalara (Akbank, Garanti BBVA, İş Bankas�
 Yapı Kredi, Ziraat Bankası ve diğerleri) ve iyzico, Paycell gibi ödeme
 kuruluşlarına bağlar. Bankanız henüz bağlı değilse bize talep iletin, ekleyelim. 3D Secure, taksit, ön provizyon,
 iade ve akıllı yönlendirme hazır gelir; kart bilgisi sunucunuza hiç gelmez.
+
+Ödeme formu mağazanızın kendi WooCommerce **sipariş ödeme sayfasında** açılır;
+eklenti mevcut Lunixi Checkout SDK'sını bu sayfaya yerleştirir. Normal ödeme
+akışında `pay.lunixi.com` yönlendirmesi gerekmez. Yöntemler ve çoklu kart
+uygunluğu Lunixi form ayarlarından gelir; ödeme eklentisinde gömülü/yönlendirmeli
+mod seçicisi yoktur. Abonelik portalı ve alt bayi kayıt bağlantıları ayrı
+özelliklerdir; banka/3D Secure adımı gerektiğinde yönlendirme yapabilir.
 
 ## Requirements
 
@@ -64,6 +79,16 @@ composer install --no-dev
 Without Composer on the server, run these steps on your own machine and upload
 the whole `lunixi` folder to `wp-content/plugins`. Then activate
 **Lunixi for WordPress** on the **Plugins** screen.
+
+## Upgrade to 0.2.6
+
+The 0.2.6 patch is prepared source until its release is reviewed and published; it is not a WordPress.org approval claim. Older pending orders keep their original payment, token and idempotency key. Their saved `_lunixi_checkout_script` is parsed as data and mounted through WordPress script enqueueing; the original HTML/JavaScript is never printed or evaluated. Existing new-format metadata takes precedence and is not rewritten. Available methods, multi-card and insurance options remain in the original form configuration.
+
+Invalid, partial or conflicting saved checkout data stays on reconciliation hold. Retrying checkout for any retained attempt cannot allocate another intent or key. Native paid/authorized/failed holds remain in force. No browser request migrates financial state or marks an order paid. Keep the existing metadata through reconciliation; do not clear it to bypass the hold.
+
+The SDK stays on the 0.28.x line with constraint `^0.28.1` and the verified minimum version **0.28.1**; this metadata correction does not upgrade the SDK minor line. The parser consumes the existing `CheckoutIntent::checkoutFormContent()` contract. Focused tests use native-API doubles and generated fixtures, not a full WordPress/WooCommerce merchant acceptance environment. Complete your existing store's HTTPS TEST checkout/webhook acceptance before deployment.
+
+**Türkçe:** 0.2.6 inceleme/yayın için hazırlanmış kaynak sürümdür. Geçerli eski form kaydı aynı ödeme, token ve anahtarla yalnız veri olarak okunur; ham HTML çalıştırılmaz, yeni metadata veya finansal durum yazılmaz. Geçersiz ya da çakışan kayıt mutabakat bekletmesine alınır; tekrar checkout yeni ödeme/anahtar üretemez. Mevcut yöntem, çoklu kart ve sigorta ayarları korunur. SDK 0.28 serisinde kalır; bağımlılık doğrulanmış en düşük sürüm olan `^0.28.1` olarak tanımlanır; canlı mağaza kabulü bu odaklı uyumluluk kontrolünün parçası değildir.
 
 ## Setup
 

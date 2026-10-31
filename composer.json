@@ -6,7 +6,7 @@
     "require": {
         "php": ">=7.4",
         "ext-sodium": "*",
-        "lunixi/php-sdk": "^0.28"
+        "lunixi/php-sdk": "^0.28.1"
     },
     "require-dev": {
         "humbug/php-scoper": "^0.18"

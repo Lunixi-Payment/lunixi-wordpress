@@ -108,6 +108,16 @@ final class Gateway extends \WC_Payment_Gateway
             return ['result' => 'failure'];
         }
 
+        // Upgrades/repeated checkout submissions must not rotate a saved attempt.
+        // This branch precedes SDK initialization and nextAttemptKey().
+        if (CheckoutBootstrap::hasOrderData($order)) {
+            if (self::resumableBootstrap($order) !== null) {
+                return ['result' => 'success', 'redirect' => $order->get_checkout_payment_url(true)];
+            }
+            wc_add_notice(__('This payment session requires reconciliation. Please contact the store before making another payment.', 'lunixi'), 'error');
+            return ['result' => 'failure'];
+        }
+
         $plugin = Plugin::instance();
         if (!$plugin->sdk()->isReady()) {
             wc_add_notice(__('Payment is temporarily unavailable. Please try again later.', 'lunixi'), 'error');
@@ -151,10 +161,13 @@ final class Gateway extends \WC_Payment_Gateway
             $order->update_meta_data('_lunixi_active_attempt_id', $intent->paymentId());
             $order->update_meta_data('_lunixi_attempt_idempotency_key', $idempotencyKey);
             $order->update_meta_data('_lunixi_attempt_status', 'INITIATED');
-            // The gateway returns a self-contained bootstrap <script> (token + config
-            // embedded) that loads the Lunixi SDK and mounts the form — iyzico-style.
-            // We render it as-is on the pay page; no token/bundle managed by the plugin.
-            $order->update_meta_data('_lunixi_checkout_script', $intent->checkoutFormContent());
+            // The gateway embeds the SDK URL and checkout config (with the token) in a
+            // bootstrap <script>. Only that data is stored; the markup is never printed.
+            $bootstrap = CheckoutBootstrap::fromGatewayScript($intent->checkoutFormContent());
+            if ($bootstrap === null) {
+                throw new \RuntimeException('Checkout bootstrap could not be read from the gateway response.');
+            }
+            $bootstrap->store($order);
             $order->update_status('pending', sprintf(
                 /* translators: 1: intent id, 2: capture mode */
                 __('Lunixi: payment initiated (intent %1$s, %2$s).', 'lunixi'),
@@ -181,13 +194,11 @@ final class Gateway extends \WC_Payment_Gateway
     }
 
     /**
-     * Order-pay page: render the gateway-returned checkout bootstrap.
+     * Order-pay page: mount the Lunixi card form.
      *
-     * `checkoutFormContent` is a self-contained <script> produced by the gateway
-     * (token + checkout config embedded) that loads the Lunixi SDK and mounts the
-     * card form into `#lunixi-checkout-form` — the same iyzico-style model. We
-     * output the mount target and the trusted script verbatim; the plugin manages
-     * no token, bundle URL or mount logic.
+     * Prints only the mount target. The checkout SDK is enqueued from the stored
+     * URL and the stored config is passed to it as JSON in an inline script
+     * ({@see CheckoutBootstrap}).
      *
      * @param int $order_id
      */
@@ -197,19 +208,16 @@ final class Gateway extends \WC_Payment_Gateway
         if (!$order) {
             return;
         }
-        $script = (string) $order->get_meta('_lunixi_checkout_script');
-        if ($script === '') {
-            echo '<p>' . esc_html__('Payment session could not be started. Please return to checkout.', 'lunixi') . '</p>';
+        $bootstrap = self::resumableBootstrap($order);
+        if ($bootstrap === null) {
+            echo '<p>' . esc_html__('This payment session requires reconciliation. Please contact the store before making another payment.', 'lunixi') . '</p>';
             return;
         }
 
-        // The SDK mounts into this element (the gateway script targets #lunixi-checkout-form).
-        echo '<div id="lunixi-checkout-form" class="lunixi-checkout-form"></div>';
+        echo '<div id="' . esc_attr(CheckoutBootstrap::MOUNT_ID) . '" class="lunixi-checkout-form"></div>';
 
-        // Trusted, server-generated bootstrap from the Lunixi gateway (contains the
-        // SDK loader + the one-time token). It is HTML/JS to render, not data to escape.
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo $script;
+        wp_enqueue_script('lunixi-checkout', $bootstrap->sdkUrl(), [], LUNIXI_VERSION, true);
+        wp_add_inline_script('lunixi-checkout', $bootstrap->mountScript());
     }
 
     /**
@@ -247,6 +255,25 @@ final class Gateway extends \WC_Payment_Gateway
             Logger::error('refund failed', ['order' => $order->get_id(), 'error' => $e->getMessage()]);
             return new \WP_Error('lunixi_refund', $e->getMessage());
         }
+    }
+
+    /** Presentation only: native state/binding must still describe the same unpaid attempt. */
+    private static function resumableBootstrap(\WC_Order $order): ?CheckoutBootstrap
+    {
+        $active = $order->get_meta('_lunixi_active_attempt_id');
+        $payment = $order->get_meta('_lunixi_payment_order_id');
+        $status = $order->get_meta('_lunixi_attempt_status');
+        if (
+            !is_string($active) || !is_string($payment) || !is_string($status)
+            || $order->get_status() !== 'pending'
+            || !in_array($status, ['', 'INITIATED', 'PENDING'], true)
+            || ($active !== '' && $payment !== '' && $active !== $payment)
+            || !preg_match('/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,190}$/D', $active !== '' ? $active : $payment)
+        ) {
+            return null;
+        }
+        $bootstrap = CheckoutBootstrap::fromOrder($order);
+        return $bootstrap !== null && $bootstrap->matchesPayment($active !== '' ? $active : $payment) ? $bootstrap : null;
     }
 
     private static function nextAttemptKey(\WC_Order $order): string
