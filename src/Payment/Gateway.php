@@ -103,11 +103,26 @@ final class Gateway extends \WC_Payment_Gateway
      */
     public function process_payment($order_id): array
     {
-        $order = wc_get_order($order_id);
-        if (!$order) {
+        $orderId = (int) $order_id;
+        if ($orderId < 1) {
             return ['result' => 'failure'];
         }
+        try {
+            // Serialize retained-attempt lookup, reservation AND the create
+            // request. Two PHP workers must never mint two UUIDs for one order.
+            return OrderMutex::synchronized($orderId, function () use ($orderId): array {
+                return $this->createLocked(OrderMutex::reread($orderId));
+            });
+        } catch (\Throwable $e) {
+            Logger::error('checkout reservation deferred', ['order' => $orderId]);
+            wc_add_notice(__('Payment is temporarily unavailable. Please try again later.', 'lunixi'), 'error');
+            return ['result' => 'failure'];
+        }
+    }
 
+    /** @return array<string,string> Called only under the native order mutex. */
+    private function createLocked(\WC_Order $order): array
+    {
         // Upgrades/repeated checkout submissions must not rotate a saved attempt.
         // This branch precedes SDK initialization and nextAttemptKey().
         if (CheckoutBootstrap::hasOrderData($order)) {
@@ -126,8 +141,15 @@ final class Gateway extends \WC_Payment_Gateway
 
         try {
             $currency = (string) $order->get_currency();
-            $amountMinor = Money::toMinor((float) $order->get_total(), $currency);
+            $amountMinor = PaymentEvidence::minor((string) $order->get_total(), Money::exponent($currency));
             $idempotencyKey = self::nextAttemptKey($order);
+            // Persist the ORIGINAL native identity and key before any financial
+            // POST. An unknown/lost response must never allocate another key.
+            $order->update_meta_data('_lunixi_attempt_idempotency_key', $idempotencyKey);
+            $order->update_meta_data('_lunixi_attempt_status', 'PREPARED');
+            $order->update_meta_data('_lunixi_order_snapshot', PaymentEvidence::snapshot($order));
+            $order->update_meta_data('_lunixi_payment_environment', $plugin->settings()->environment());
+            $order->save();
 
             $request = new CreateIntentRequest($amountMinor, $currency, (string) $order->get_order_number());
             // The 3DS return redirect may append informational query params to this
@@ -186,9 +208,9 @@ final class Gateway extends \WC_Payment_Gateway
                 'redirect' => $order->get_checkout_payment_url(true),
             ];
         } catch (\Throwable $e) {
-            Logger::error('createIntent failed', ['order' => $order->get_id(), 'error' => $e->getMessage()]);
-            $order->add_order_note('Lunixi createIntent failed: ' . $e->getMessage());
-            wc_add_notice(__('Could not start the payment. Please try again.', 'lunixi'), 'error');
+            Logger::error('createIntent deferred', ['order' => $order->get_id()]);
+            $order->add_order_note(__('Lunixi: payment result requires reconciliation; the original attempt is retained.', 'lunixi'));
+            wc_add_notice(__('Payment requires reconciliation. Please contact the store before making another payment.', 'lunixi'), 'error');
             return ['result' => 'failure'];
         }
     }
@@ -278,11 +300,15 @@ final class Gateway extends \WC_Payment_Gateway
 
     private static function nextAttemptKey(\WC_Order $order): string
     {
+        $existing = (string) $order->get_meta('_lunixi_attempt_idempotency_key');
+        if ($existing !== '') {
+            return $existing;
+        }
         $count = (int) $order->get_meta('_lunixi_attempt_count');
         $count++;
         $order->update_meta_data('_lunixi_attempt_count', (string) $count);
 
-        return 'wc-' . $order->get_id() . '-' . $count;
+        return 'wc-' . wp_generate_uuid4();
     }
 
     private static function localeCode(): string

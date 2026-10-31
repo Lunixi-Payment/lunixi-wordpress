@@ -70,18 +70,7 @@ final class Reconciler
             return;
         }
 
-        $orders = wc_get_orders([
-            'limit' => self::BATCH,
-            'type' => 'shop_order',
-            'status' => ['pending', 'on-hold'],
-            'payment_method' => Gateway::GATEWAY_ID,
-            'date_created' => '<' . (time() - self::STALE_MINUTES * MINUTE_IN_SECONDS),
-            'orderby' => 'date',
-            'order' => 'ASC',
-            'meta_query' => [
-                ['key' => '_lunixi_payment_order_id', 'compare' => 'EXISTS'],
-            ],
-        ]);
+        $orders = OrderQueries::stale(time() - self::STALE_MINUTES * MINUTE_IN_SECONDS, self::BATCH);
 
         if (!is_array($orders)) {
             return;
@@ -95,15 +84,29 @@ final class Reconciler
 
     private function reconcileOne(\WC_Order $order): void
     {
+        try {
+            OrderMutex::synchronized($order->get_id(), function () use ($order): void {
+                $this->reconcileLocked(OrderMutex::reread($order->get_id()));
+            });
+        } catch (\Throwable $e) {
+            // No remote exception/body/token may enter logs. Leave the order
+            // available to a later authenticated reconciliation attempt.
+            Logger::error('payment reconciliation deferred', ['order' => $order->get_id()]);
+        }
+    }
+
+    private function reconcileLocked(\WC_Order $order): void
+    {
         $intentId = (string) $order->get_meta('_lunixi_payment_order_id');
         if ($intentId === '') {
             return;
         }
 
         try {
-            $detail = Plugin::instance()->sdk()->client()->payments()->get($intentId);
+            $raw = Plugin::instance()->sdk()->client()->api()->request('GET', '/api/v1/payments/' . rawurlencode($intentId));
+            $detail = new \Lunixi\Sdk\Payment\PaymentIntent(is_array($raw['data'] ?? null) ? $raw['data'] : []);
         } catch (\Throwable $e) {
-            Logger::error('reconcile fetch failed', ['order' => $order->get_id(), 'error' => $e->getMessage()]);
+            Logger::error('reconcile fetch deferred', ['order' => $order->get_id()]);
             return;
         }
 
@@ -120,8 +123,15 @@ final class Reconciler
         $order->update_meta_data('_lunixi_detail_enriched', 'yes');
         $order->update_meta_data('_lunixi_reconciled_at', gmdate('c'));
 
-        if ($detail->isCaptured()) {
+        // SDK 0.28.1 only classifies CAPTURED/PARTIALLY_CAPTURED as captured.
+        // A split parent owns no captured balance itself; the same paid guard
+        // must verify its complete aggregate when its webhook was missed.
+        if ($detail->isCaptured() || $status === 'SETTLED_BY_SPLIT') {
             if (!$order->is_paid()) {
+                $proof = PaymentEvidence::paid($order, $intentId, null, $raw);
+                $order->update_meta_data('_lunixi_charged_amount_minor', (string) $proof['amount']);
+                $order->update_meta_data('_lunixi_order_amount_minor', (string) $proof['orderAmount']);
+                $order->update_meta_data('_lunixi_additions_amount_minor', (string) $proof['additionsAmount']);
                 $order->update_meta_data('_lunixi_attempt_status', 'CAPTURED');
                 $order->save_meta_data();
                 $order->payment_complete($intentId);

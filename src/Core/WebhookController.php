@@ -48,10 +48,22 @@ final class WebhookController
         }
 
         $body = (string) $request->get_body();
-        $headers = self::flattenHeaders($request->get_headers());
-
         try {
+            if (strlen($body) > 1048576) {
+                return new \WP_REST_Response(['error' => 'body_too_large'], 413);
+            }
+            $headers = self::flattenHeaders($request->get_headers());
             $event = (new WebhookVerifier())->verify($body, $headers, $secret);
+            $envelope = json_decode($body, true);
+            if (
+                !is_array($envelope) || !is_string($envelope['id'] ?? null) || $envelope['id'] === ''
+                || !is_string($envelope['type'] ?? null) || $envelope['type'] === ''
+                || ($headers['x-lunixi-event-id'] ?? '') !== $envelope['id']
+                || (isset($headers['x-lunixi-event-type']) && $headers['x-lunixi-event-type'] !== $envelope['type'])
+                || (array_key_exists('environment', $envelope) && $envelope['environment'] !== $this->settings->environment())
+            ) {
+                throw new WebhookVerificationException('Signed event identity mismatch.');
+            }
         } catch (WebhookVerificationException $e) {
             return new \WP_REST_Response(['error' => 'invalid_signature'], 400);
         }
@@ -64,13 +76,19 @@ final class WebhookController
         // genuinely re-applied instead of being skipped as a "duplicate" — which
         // would silently lose the result.
         $doneKey = 'lunixi_wh_done_' . md5($event->id());
-        if (get_transient($doneKey)) {
+        $done = get_transient($doneKey);
+        $payloadHash = hash('sha256', $body);
+        if (is_array($done) && isset($done['payloadHash']) && !hash_equals((string) $done['payloadHash'], $payloadHash)) {
+            return new \WP_REST_Response(['error' => 'event_id_collision'], 409);
+        }
+        if ($done) {
             return new \WP_REST_Response(['status' => 'duplicate'], 200);
         }
 
         /**
          * Verified, authentic webhook. Modules (payment, …) hook this to update
-         * their records. The event is the source of truth for order state.
+         * their records. Paid transitions additionally require an authenticated
+         * payment GET bound to the original native order and settlement.
          * Handlers MUST be idempotent (re-delivery is expected).
          *
          * @param \Lunixi\Sdk\Webhook\WebhookEvent $event
@@ -78,13 +96,13 @@ final class WebhookController
         try {
             do_action('lunixi_webhook_event', $event);
         } catch (\Throwable $e) {
-            Logger::error('webhook processing failed', ['event' => $event->id(), 'type' => $event->type(), 'error' => $e->getMessage()]);
+            Logger::error('webhook processing deferred', ['event' => $event->id(), 'type' => $event->type()]);
             // 5xx → gateway retries the SAME event id; not marked done, so we re-apply.
-            return new \WP_REST_Response(['error' => 'processing_failed'], 500);
+            return new \WP_REST_Response(['error' => 'reconciliation_required'], 503);
         }
 
         // Processed successfully — record the marker so future retries short-circuit.
-        set_transient($doneKey, 1, WEEK_IN_SECONDS);
+        set_transient($doneKey, ['payloadHash' => $payloadHash], WEEK_IN_SECONDS);
 
         return new \WP_REST_Response(['status' => 'ok'], 200);
     }
@@ -99,7 +117,20 @@ final class WebhookController
     {
         $out = [];
         foreach ($headers as $name => $value) {
-            $out[(string) $name] = is_array($value) ? (string) reset($value) : (string) $value;
+            // WP_REST_Request canonicalizes hyphens to underscores.
+            $key = str_replace('_', '-', strtolower((string) $name));
+            $critical = in_array($key, ['x-lunixi-signature', 'x-lunixi-signature-timestamp', 'x-lunixi-event-id', 'x-lunixi-event-type'], true);
+            if ($critical && (isset($out[$key]) || (is_array($value) && count($value) !== 1))) {
+                throw new WebhookVerificationException('Ambiguous webhook header.');
+            }
+            $text = is_array($value) ? (string) reset($value) : (string) $value;
+            if (
+                $critical && (preg_match('/[\x00-\x1F\x7F]/', $text)
+                || ($key !== 'x-lunixi-signature' && strpos($text, ',') !== false))
+            ) {
+                throw new WebhookVerificationException('Invalid webhook header.');
+            }
+            $out[$key] = $text;
         }
         return $out;
     }

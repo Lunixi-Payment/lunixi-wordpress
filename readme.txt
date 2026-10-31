@@ -4,7 +4,7 @@ Tags: payment gateway, woocommerce, sanal pos, 3d secure, taksit
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.2.6
+Stable tag: 0.2.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,7 +62,7 @@ Mevcut Lunixi Checkout formu mağazanızın kendi WooCommerce sipariş ödeme sa
 
 This plugin connects your site to Lunixi, a payment platform, and does not work without a Lunixi account. It talks to the following Lunixi services; nothing is sent until you enter your Lunixi credentials.
 
-* **Lunixi API** (`api-gateway.lunixi.com`, or `sandbox-api-gateway.lunixi.com` in test mode). The plugin signs in with your API key, then sends:
+* **Lunixi API** (`api-gateway.lunixi.com`; the key selects TEST or LIVE). The plugin signs in with your API key, then sends:
   * when a customer pays: the order amount, currency, order number, the return URL of your site and the shop language, so Lunixi can open the checkout form;
   * when you capture, void or refund an order in the WooCommerce admin: the Lunixi payment id and the amount;
   * periodically, for orders still pending: the Lunixi payment id, to read the payment status (in case a webhook was missed);
@@ -83,6 +83,16 @@ The payment gateway requires WooCommerce. Other services work on plain WordPress
 The card form is rendered and tokenised by Lunixi's JS SDK; card data never reaches your server.
 
 == Changelog ==
+
+= 0.2.7 =
+* Ship a standalone PHP-Scoper-isolated SDK 0.29.6 in the merchant ZIP; Composer is not required on the merchant server. Source development retains its ^0.28.1 minimum.
+* Normalize WordPress webhook headers and reject ambiguous critical aliases, values and signed envelope mismatches.
+* Require merchant-authenticated GET identity, currency and complete unrefunded settlement before completing an order; failed/unavailable evidence stays retryable.
+* Keep the native principal separate from a canonically proven final charged amount. Unexplained fee/premium differences stay on reconciliation hold; a split leg cannot complete an order.
+* Serialize CREATE reservation/request and webhook, final partial-capture and cron paid transitions on the native database connection; scope locks to database/site/table identity and re-read the order.
+* Recover a missed split-parent webhook through the same complete-parent proof in cron; reject negative integer settlement amounts.
+* Use supported native CPT and HPOS payment lookup queries and UUID keys for newly reserved attempts. Existing keys and the SDK ^0.28.1 dependency remain unchanged.
+* Add a portable isolated real WordPress/WooCommerce acceptance runner. Synthetic gateway tests are separate from live merchant/bank and WordPress.org approval.
 
 = 0.2.6 =
 * Mount the existing merchant-site checkout using parsed SDK URL/config data and WordPress script enqueueing instead of printing gateway HTML.

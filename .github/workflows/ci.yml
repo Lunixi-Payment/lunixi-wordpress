@@ -1,4 +1,4 @@
-name: CI
+name: WordPress plugin compatibility and standalone merchant ZIP
 
 on:
   push:
@@ -6,38 +6,315 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish the tested merchant ZIP to its existing version tag after every check passes'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   syntax:
-    name: Syntax (PHP ${{ matrix.php }})
+    name: Source syntax (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # current official v4 / v4.4.0
-      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # current official v2, annotated tag peeled
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-      - name: Lint plugin files
-        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Lint plugin source files
+        run: find . -name '*.php' -not -path './vendor/*' -not -path './build/*' -print0 | xargs -0 -n1 php -l > /dev/null
 
   sdk:
-    name: Lunixi PHP SDK compatibility
+    name: Source PHP SDK compatibility and production dependency audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # current official v4 / v4.4.0
-      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # current official v2, annotated tag peeled
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.3'
-          extensions: sodium, curl, json
+          extensions: sodium,curl,json
+          tools: composer:v2
           coverage: none
       - run: composer validate --strict --no-check-lock
-      - run: composer install --no-dev --no-progress --prefer-dist
-      - name: Every SDK class the plugin uses exists
+      - run: composer install --no-dev --no-progress --prefer-dist --no-interaction --no-plugins --no-scripts
+      - run: composer audit --no-dev
+      - name: Every SDK class the source plugin uses exists
         run: php bin/check-sdk-symbols.php
+
+  package:
+    name: Build and check the standalone merchant ZIP (PHP 8.3)
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      zip_sha256: ${{ steps.prepare.outputs.zip_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.3'
+          extensions: sodium,curl,json,zip,mbstring
+          tools: composer:v2
+          coverage: none
+      - name: Build from the exact published SDK in isolated staging
+        run: bash bin/build-dist.sh
+      - name: Verify scoped symbols and collision isolation
+        run: php bin/check-dist.php build/dist/lunixi
+      - name: Prepare only the exact checked ZIP and checksum
+        id: prepare
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          matches = re.findall(r"^ \* Version:[ \t]+((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))[ \t]*$", Path("lunixi.php").read_text(encoding="utf-8"), re.MULTILINE)
+          if len(matches) != 1:
+              raise SystemExit("Exactly one trusted semantic plugin header version is required.")
+          version = matches[0]
+          name = "lunixi-" + version + ".zip"
+          import hashlib, os, shutil
+          source = Path("build/dist") / name
+          checksum = Path("build/dist/SHA256SUMS")
+          if source.is_symlink() or not source.is_file() or not 0 < source.stat().st_size <= 32 * 1024 * 1024:
+              raise SystemExit("The builder's exact merchant ZIP is missing or invalid.")
+          if checksum.is_symlink() or not checksum.is_file() or checksum.stat().st_size > 1024:
+              raise SystemExit("The builder's checksum is missing or invalid.")
+          digest = hashlib.sha256(source.read_bytes()).hexdigest()
+          if checksum.read_text(encoding="ascii") != digest + "  " + name + "\n":
+              raise SystemExit("Builder checksum does not match its ZIP.")
+          output = Path("release-assets")
+          output.mkdir()
+          shutil.copyfile(source, output / name)
+          shutil.copyfile(checksum, output / "SHA256SUMS")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a") as handle:
+              handle.write("version=" + version + "\nzip_sha256=" + digest + "\n")
+          PY
+      - name: Store the checked same-run merchant assets
+        id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tested-wordpress-release
+          path: release-assets/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  artifact_floor:
+    name: Bundled merchant ZIP syntax (PHP 7.4)
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '7.4'
+          coverage: none
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.package.outputs.artifact_id }}
+          path: release-assets
+          merge-multiple: true
+      - name: Check same-run identity, checksum and safe archive before extraction
+        env:
+          EXPECTED_ZIP_SHA256: ${{ needs.package.outputs.zip_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          matches = re.findall(r"^ \* Version:[ \t]+((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))[ \t]*$", Path("lunixi.php").read_text(encoding="utf-8"), re.MULTILINE)
+          if len(matches) != 1:
+              raise SystemExit("Exactly one trusted semantic plugin header version is required.")
+          version = matches[0]
+          name = "lunixi-" + version + ".zip"
+          import hashlib, json, os, stat, zipfile
+          folder = Path("release-assets")
+          if folder.is_symlink() or not folder.is_dir() or {item.name for item in folder.iterdir()} != {name, "SHA256SUMS"}:
+              raise SystemExit("Only the expected merchant ZIP and SHA256SUMS are accepted.")
+          asset, checksum = folder / name, folder / "SHA256SUMS"
+          if any(item.is_symlink() or not item.is_file() for item in (asset, checksum)):
+              raise SystemExit("Release assets must be regular files.")
+          if not 0 < asset.stat().st_size <= 32 * 1024 * 1024 or not 0 < checksum.stat().st_size <= 1024:
+              raise SystemExit("Release asset size exceeds its bound.")
+          digest = hashlib.sha256(asset.read_bytes()).hexdigest()
+          expected = os.environ.get("EXPECTED_ZIP_SHA256", "")
+          if not re.fullmatch(r"[0-9a-f]{64}", expected) or digest != expected:
+              raise SystemExit("ZIP differs from the immutable same-run package output.")
+          if checksum.read_text(encoding="ascii") != digest + "  " + name + "\n":
+              raise SystemExit("Public checksum does not match the tested package.")
+          with zipfile.ZipFile(asset) as archive:
+              entries = archive.infolist()
+              if not 0 < len(entries) <= 4096 or sum(item.file_size for item in entries) > 128 * 1024 * 1024:
+                  raise SystemExit("ZIP count or decompressed size exceeds its bound.")
+              seen = set()
+              for item in entries:
+                  path = item.filename
+                  parts = path.rstrip("/").split("/")
+                  kind = stat.S_IFMT(item.external_attr >> 16)
+                  if (item.orig_filename != path or not path.startswith("lunixi/") or "\\" in path or any(ord(char) < 32 or ord(char) == 127 for char in path)
+                          or any(part in ("", ".", "..") or ":" in part for part in parts)
+                          or path.casefold() in seen or item.flag_bits & 1
+                          or kind not in (0, stat.S_IFREG, stat.S_IFDIR)):
+                      raise SystemExit("Unsafe, duplicate, encrypted or linked ZIP entry.")
+                  seen.add(path.casefold())
+              if archive.testzip() is not None:
+                  raise SystemExit("ZIP CRC check failed.")
+              if archive.getinfo("lunixi/lunixi.php").file_size > 128 * 1024 or archive.getinfo("lunixi/vendor/scoped-package.json").file_size > 64 * 1024:
+                  raise SystemExit("Package identity metadata exceeds its bound.")
+              headers = re.findall(r"^ \* Version:[ \t]+([^\r\n]+?)[ \t]*$", archive.read("lunixi/lunixi.php").decode("utf-8"), re.MULTILINE)
+              metadata = json.loads(archive.read("lunixi/vendor/scoped-package.json"))
+              if headers != [version] or metadata.get("pluginVersion") != version:
+                  raise SystemExit("Source header and packaged plugin version differ.")
+              if (metadata.get("sdk") != {"name": "lunixi/php-sdk", "version": "0.29.6", "sourceReference": "29fb3ac2f0fdff7a3825e189572c7aef4b212cc1", "license": "MIT"}
+                      or metadata.get("prefix") != "Lunixi\\WP\\Vendor" or metadata.get("merchantComposerRequired") is not False
+                      or not re.fullmatch(r"PhpScoper version 0\.18\.[0-9]+(?:@[0-9A-Za-z._-]+)?", metadata.get("scoper", ""))):
+                  raise SystemExit("The exact standalone scoped SDK build is required.")
+              if "lunixi/vendor/scoped-autoload.php" not in archive.namelist() or any(path in archive.namelist() for path in ("lunixi/vendor/autoload.php", "lunixi/vendor/scoper-autoload.php")):
+                  raise SystemExit("The standalone scoped loader boundary is invalid.")
+              destination = Path("artifact-floor")
+              destination.mkdir()
+              archive.extractall(destination)
+              php_files = [item for item in entries if not item.is_dir() and item.filename.endswith(".php")]
+              if not php_files:
+                  raise SystemExit("Bundled PHP files are required for the floor check.")
+          print("Validated and extracted " + str(len(php_files)) + " bundled PHP files for PHP 7.4 syntax validation.")
+          PY
+      - name: Lint every bundled PHP file at the declared merchant floor
+        shell: bash
+        run: |
+          set -euo pipefail
+          find artifact-floor/lunixi -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do
+            if ! php -l "$file" > /dev/null; then
+              echo "PHP 7.4 syntax failed: $file" >&2
+              php -l "$file"
+              exit 1
+            fi
+          done
+
+  publish_release:
+    name: Publish the same tested ZIP to its existing source tag
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish_release
+    needs: [syntax, sdk, package, artifact_floor]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: wordpress-release-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.package.outputs.artifact_id }}
+          path: release-assets
+          merge-multiple: true
+      - name: Validate passive release assets against the exact checked source/package
+        id: verify
+        env:
+          EXPECTED_ZIP_SHA256: ${{ needs.package.outputs.zip_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          matches = re.findall(r"^ \* Version:[ \t]+((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))[ \t]*$", Path("lunixi.php").read_text(encoding="utf-8"), re.MULTILINE)
+          if len(matches) != 1:
+              raise SystemExit("Exactly one trusted semantic plugin header version is required.")
+          version = matches[0]
+          name = "lunixi-" + version + ".zip"
+          import hashlib, json, os, stat, zipfile
+          folder = Path("release-assets")
+          if folder.is_symlink() or not folder.is_dir() or {item.name for item in folder.iterdir()} != {name, "SHA256SUMS"}:
+              raise SystemExit("Only the expected merchant ZIP and SHA256SUMS are accepted.")
+          asset, checksum = folder / name, folder / "SHA256SUMS"
+          if any(item.is_symlink() or not item.is_file() for item in (asset, checksum)):
+              raise SystemExit("Release assets must be regular files.")
+          if not 0 < asset.stat().st_size <= 32 * 1024 * 1024 or not 0 < checksum.stat().st_size <= 1024:
+              raise SystemExit("Release asset size exceeds its bound.")
+          digest = hashlib.sha256(asset.read_bytes()).hexdigest()
+          expected = os.environ.get("EXPECTED_ZIP_SHA256", "")
+          if not re.fullmatch(r"[0-9a-f]{64}", expected) or digest != expected:
+              raise SystemExit("ZIP differs from the immutable same-run package output.")
+          if checksum.read_text(encoding="ascii") != digest + "  " + name + "\n":
+              raise SystemExit("Public checksum does not match the tested package.")
+          with zipfile.ZipFile(asset) as archive:
+              entries = archive.infolist()
+              if not 0 < len(entries) <= 4096 or sum(item.file_size for item in entries) > 128 * 1024 * 1024:
+                  raise SystemExit("ZIP count or decompressed size exceeds its bound.")
+              seen = set()
+              for item in entries:
+                  path = item.filename
+                  parts = path.rstrip("/").split("/")
+                  kind = stat.S_IFMT(item.external_attr >> 16)
+                  if (item.orig_filename != path or not path.startswith("lunixi/") or "\\" in path or any(ord(char) < 32 or ord(char) == 127 for char in path)
+                          or any(part in ("", ".", "..") or ":" in part for part in parts)
+                          or path.casefold() in seen or item.flag_bits & 1
+                          or kind not in (0, stat.S_IFREG, stat.S_IFDIR)):
+                      raise SystemExit("Unsafe, duplicate, encrypted or linked ZIP entry.")
+                  seen.add(path.casefold())
+              if archive.testzip() is not None:
+                  raise SystemExit("ZIP CRC check failed.")
+              if archive.getinfo("lunixi/lunixi.php").file_size > 128 * 1024 or archive.getinfo("lunixi/vendor/scoped-package.json").file_size > 64 * 1024:
+                  raise SystemExit("Package identity metadata exceeds its bound.")
+              headers = re.findall(r"^ \* Version:[ \t]+([^\r\n]+?)[ \t]*$", archive.read("lunixi/lunixi.php").decode("utf-8"), re.MULTILINE)
+              metadata = json.loads(archive.read("lunixi/vendor/scoped-package.json"))
+              if headers != [version] or metadata.get("pluginVersion") != version:
+                  raise SystemExit("Source header and packaged plugin version differ.")
+              if (metadata.get("sdk") != {"name": "lunixi/php-sdk", "version": "0.29.6", "sourceReference": "29fb3ac2f0fdff7a3825e189572c7aef4b212cc1", "license": "MIT"}
+                      or metadata.get("prefix") != "Lunixi\\WP\\Vendor" or metadata.get("merchantComposerRequired") is not False
+                      or not re.fullmatch(r"PhpScoper version 0\.18\.[0-9]+(?:@[0-9A-Za-z._-]+)?", metadata.get("scoper", ""))):
+                  raise SystemExit("The exact standalone scoped SDK build is required.")
+              if "lunixi/vendor/scoped-autoload.php" not in archive.namelist() or any(path in archive.namelist() for path in ("lunixi/vendor/autoload.php", "lunixi/vendor/scoper-autoload.php")):
+                  raise SystemExit("The standalone scoped loader boundary is invalid.")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a") as output:
+              output.write("version=" + version + "\nzip_name=" + name + "\n")
+          notes = "Standalone WordPress/WooCommerce merchant ZIP and SHA256SUMS from a fully passing workflow.\n\n"
+          notes += "Source commit: " + os.environ["GITHUB_SHA"] + "\n"
+          notes += "Verification: " + os.environ["GITHUB_SERVER_URL"] + "/" + os.environ["GITHUB_REPOSITORY"] + "/actions/runs/" + os.environ["GITHUB_RUN_ID"] + "\n\n"
+          notes += "Includes namespace-isolated PHP SDK 0.29.6; the merchant needs no Composer install. Verify SHA256SUMS before staging installation and preserve pending payment identities and encryption keys.\n\n"
+          notes += "CI checks source and bundled PHP 7.4 syntax, SDK symbols/audit and scoped-loader collision controls. Native acceptance uses explicit synthetic gateway/SDK collaborators; this release does not claim a live bank/card/3DS transaction, theme certification or WordPress.org approval.\n"
+          Path("release-notes.md").write_text(notes, encoding="utf-8")
+          PY
+      - name: Create the release without changing tags or existing releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.verify.outputs.version }}
+          RELEASE_ZIP: ${{ steps.verify.outputs.zip_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v$RELEASE_VERSION"
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" > /dev/null
+          tag_commit="$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq .sha)"
+          if [[ "$tag_commit" != "$GITHUB_SHA" ]]; then
+            echo 'Version tag differs from the tested source commit; refusing publication.' >&2
+            exit 1
+          fi
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo 'Release already exists; refusing to overwrite it.' >&2
+            exit 1
+          fi
+          gh release create "$tag" "release-assets/$RELEASE_ZIP" release-assets/SHA256SUMS --repo "$GITHUB_REPOSITORY" --verify-tag --title "Lunixi WordPress / WooCommerce $RELEASE_VERSION" --notes-file release-notes.md

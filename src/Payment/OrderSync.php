@@ -12,8 +12,8 @@ use Lunixi\WP\Plugin;
 defined('ABSPATH') || exit;
 
 /**
- * Applies the full Lunixi payment lifecycle to WooCommerce orders from verified
- * webhooks — the AUTHORITATIVE source of order state — and records a rich,
+ * Applies the Lunixi payment lifecycle from verified webhooks. Paid transitions
+ * additionally require merchant-authenticated GET settlement evidence, and record a rich,
  * Stripe/iyzico-grade payment history as order notes + meta. Idempotent (the
  * controller de-dupes by event id; handlers no-op when already applied).
  *
@@ -23,6 +23,17 @@ defined('ABSPATH') || exit;
  */
 final class OrderSync
 {
+    /** @var callable Server-owned seams for isolated unit/native transport tests. */
+    private $paidEvidence;
+    /** @var callable */
+    private $orderLock;
+
+    public function __construct(?callable $paidEvidence = null, ?callable $orderLock = null)
+    {
+        $this->paidEvidence = $paidEvidence ?? [PaymentEvidence::class, 'paid'];
+        $this->orderLock = $orderLock ?? [OrderMutex::class, 'synchronized'];
+    }
+
     public function handle(WebhookEvent $event): void
     {
         if (!$event->matches('payment.*')) {
@@ -81,20 +92,24 @@ final class OrderSync
 
     private function onPaid(\WC_Order $order, string $intentId, array $data, string $currency): void
     {
-        $amount = self::amountOf($data, ['amountMinor', 'capturedAmountMinor']);
-        $order->update_meta_data('_lunixi_attempt_status', 'CAPTURED');
-        $order->save_meta_data();
-
-        if (!$order->is_paid()) {
+        ($this->orderLock)($order->get_id(), function () use ($order, $intentId, $data): void {
+            $order = OrderMutex::reread($order->get_id());
+            if ($order->is_paid()) {
+                return;
+            }
+            $proof = ($this->paidEvidence)($order, $intentId, $data);
+            $order->update_meta_data('_lunixi_attempt_status', 'CAPTURED');
+            $order->update_meta_data('_lunixi_charged_amount_minor', (string) $proof['amount']);
+            $order->update_meta_data('_lunixi_order_amount_minor', (string) ($proof['orderAmount'] ?? $proof['amount']));
+            $order->update_meta_data('_lunixi_additions_amount_minor', (string) ($proof['additionsAmount'] ?? 0));
+            $order->save_meta_data();
             $order->payment_complete($intentId);
-        }
-        $fragment = self::enrichDetail($order, $intentId);
-        $order->add_order_note(sprintf(
-            /* translators: 1: formatted amount, 2: secure/installment/provider fragment */
-            __('Lunixi: payment captured — %1$s%2$s.', 'lunixi'),
-            $amount !== null ? Money::format($amount, $currency) : '—',
-            $fragment
-        ));
+            $order->add_order_note(sprintf(
+                /* translators: %s = authenticated captured amount */
+                __('Lunixi: payment captured — %s.', 'lunixi'),
+                Money::format($proof['amount'], $proof['currency'])
+            ));
+        });
     }
 
     private function onPartiallyCaptured(\WC_Order $order, string $intentId, array $data, string $currency): void
@@ -102,6 +117,11 @@ final class OrderSync
         $this_ = self::amountOf($data, ['capturedThisCaptureMinor']);
         $cum = self::amountOf($data, ['cumulativeCapturedMinor']);
         $rem = self::amountOf($data, ['remainingCapturableMinor']);
+        if ($rem !== null && (int) $rem === 0) {
+            // A signed zero remainder alone is not settlement evidence.
+            $this->onPaid($order, $intentId, $data, $currency);
+            return;
+        }
         $order->update_meta_data('_lunixi_attempt_status', 'PARTIALLY_CAPTURED');
         $order->save_meta_data();
 
@@ -112,10 +132,6 @@ final class OrderSync
             $cum !== null ? Money::format($cum, $currency) : '—',
             $rem !== null ? Money::format($rem, $currency) : '—'
         ));
-
-        if ($rem !== null && (int) $rem === 0 && !$order->is_paid()) {
-            $order->payment_complete($intentId);
-        }
     }
 
     private function onAuthorized(\WC_Order $order, array $data, string $currency): void
@@ -295,7 +311,7 @@ final class OrderSync
 
             return ' (' . implode(' · ', $bits) . ')';
         } catch (\Throwable $e) {
-            Logger::error('payment detail enrich failed', ['intent' => $intentId, 'error' => $e->getMessage()]);
+            Logger::error('payment detail enrich deferred', ['order' => $order->get_id()]);
             return '';
         }
     }
@@ -320,20 +336,6 @@ final class OrderSync
      */
     private static function findOrderByIntent(string $intentId)
     {
-        $orders = wc_get_orders([
-            'limit' => 1,
-            'status' => 'any',
-            'meta_query' => [
-                [
-                    'key' => '_lunixi_payment_order_id',
-                    'value' => $intentId,
-                ],
-            ],
-        ]);
-
-        if (is_array($orders) && isset($orders[0]) && $orders[0] instanceof \WC_Order) {
-            return $orders[0];
-        }
-        return null;
+        return OrderQueries::byPayment($intentId);
     }
 }

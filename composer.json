@@ -19,10 +19,7 @@
     "scripts": {
         "lint": "@php -l src",
         "check": "@php bin/check-sdk-symbols.php",
-        "build:scoped": [
-            "php-scoper add-prefix --output-dir=build/vendor --force",
-            "composer dump-autoload --working-dir=build --classmap-authoritative"
-        ]
+        "build:scoped": "@php bin/build-dist.php"
     },
     "config": {
         "allow-plugins": {
