@@ -69,11 +69,11 @@ mod seçicisi yoktur. Abonelik portalı ve alt bayi kayıt bağlantıları ayrı
 
 ## Install the merchant ZIP
 
-Use the reviewed installer ZIP and SHA256SUMS from [GitHub Releases](https://github.com/Lunixi-Payment/lunixi-wordpress/releases). In WordPress choose **Plugins → Add New → Upload Plugin**, select the ZIP, install and activate it. Composer is not needed on the store server. The 0.2.7 standalone installer is published and downloaded/checksum verified; WordPress.org approval is a separate status.
+Use the reviewed installer ZIP and SHA256SUMS from [GitHub Releases](https://github.com/Lunixi-Payment/lunixi-wordpress/releases). In WordPress choose **Plugins → Add New → Upload Plugin**, select the ZIP, install and activate it. Composer is not needed on the store server. Choose the 1.0.0 installer and its matching checksum; WordPress.org approval is a separate status.
 
 The installer privately namespaces **PHP SDK 1.0.1** under `Lunixi\\WP\\Vendor`. The reviewed public commit in `bin/sdk-release.json` is the single pin used by the builder, artifact verifier and CI. Packagist source/dist references must both match it. The standalone `vendor/scoped-autoload.php` preserves public plugin classes and theme helpers while avoiding another plugin's SDK classes. `vendor/scoped-package.json` records the actual SDK version, reference, source kind and MIT license notice. An incomplete release pin fails closed. Explicit `SDK_SOURCE` and `SDK_SOURCE_REFERENCE` inputs are development acceptance only; CI publication accepts only the pinned public package.
 
-**Türkçe:** Mağazada Composer gerekmez. İncelenmiş sürüm ZIP'ini ve SHA256SUMS dosyasını Releases sayfasından alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. 0.2.7 bağımsız kurulum ZIP’i yayımlandı ve indirilerek doğrulandı; WordPress.org onayı ayrı bir durumdur. 1.0.0 ZIP’i SDK 1.0.1'i eklentiye özel namespace ve bağımsız autoloader ile taşır. `bin/sdk-release.json` içindeki incelenmiş public commit, üretici ve CI doğrulamalarının ortak kaynağıdır; Packagist yayını ve ZIP yayını ayrı doğrulanır.
+**Türkçe:** Mağazada Composer gerekmez. İncelenmiş sürüm ZIP'ini ve SHA256SUMS dosyasını Releases sayfasından alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. 1.0.0 kurulum ZIP’ini ve aynı sürümün checksum dosyasını seçin; WordPress.org onayı ayrı bir durumdur. 1.0.0 ZIP’i SDK 1.0.1'i eklentiye özel namespace ve bağımsız autoloader ile taşır. `bin/sdk-release.json` içindeki incelenmiş public commit, üretici ve CI doğrulamalarının ortak kaynağıdır; Packagist yayını ve ZIP yayını ayrı doğrulanır.
 
 ## Development checkout and local build
 
@@ -84,7 +84,7 @@ version from [tags](https://github.com/Lunixi-Payment/lunixi-wordpress/tags):
 
 ```bash
 cd wp-content/plugins
-git clone --branch vX.Y.Z https://github.com/Lunixi-Payment/lunixi-wordpress.git lunixi
+git clone --branch v1.0.0 https://github.com/Lunixi-Payment/lunixi-wordpress.git lunixi
 cd lunixi
 composer install --no-dev
 ```
@@ -97,9 +97,11 @@ php bin/check-dist.php build/dist/lunixi
 php bin/check-dist.php --negative-control build/dist/lunixi
 ```
 
-The same command works in the public repository root or under the monorepo's WordPress directory. It resolves the immutable public SDK pin using a new Composer config/cache with plugins/scripts disabled, preserves HOME, runs PHP-Scoper and verifies every SDK import and an intentionally conflicting unscoped client. Output: `build/dist/lunixi-0.2.7.zip` and `build/dist/SHA256SUMS`. Upload that ZIP. Build tools, tests, acceptance harness, Composer autoload files and developer docs are excluded from the installer.
+The same command works in the public repository root or under the monorepo's WordPress directory. It resolves the immutable public SDK pin using a new Composer config/cache with plugins/scripts disabled, preserves HOME, runs PHP-Scoper and verifies every SDK import and an intentionally conflicting unscoped client. Output: `build/dist/lunixi-1.0.0.zip` and `build/dist/SHA256SUMS`. Upload that ZIP. Build tools, tests, acceptance harness, Composer autoload files and developer docs are excluded from the installer.
 
 ## Upgrade to 0.2.7
+
+**Historical upgrade record:** the versions and test results in this section describe 0.2.7, not the 1.0 installer.
 
 Version 0.2.7 is published as source and a standalone installer, following the 0.2.6 source release. It fixes native WordPress header normalization and requires a merchant-authenticated payment GET matching the original payment, order number, currency, principal and complete unrefunded settlement before marking an order paid. Failed or conflicting evidence returns a retryable webhook response and keeps the same attempt available for reconciliation.
 
@@ -112,6 +114,8 @@ The [portable native acceptance procedure](docs/ACCEPTANCE.md) covers real isola
 **Türkçe:** 0.2.7, 0.2.6 sonrasında kaynak ve bağımsız kurulum ZIP’i olarak yayımlandı. WordPress başlık normalizasyonu düzeltilir; ödeme tamamlanmadan önce imzalı olay ile kimliği doğrulanmış GET sonucu özgün ödeme, sipariş, döviz, ana tutar ve kesin tahsilat açısından eşleştirilir. Eksik/çelişkili kanıt tekrar denenebilir durumda kalır. İlk ödeme oluşturma, anahtar ayırma, webhook ve cron aynı sipariş kilidini kullanır; iki eşzamanlı checkout tek ödeme/anahtar, iki tamamlama süreci tek stok düşümü üretmelidir. Kilit veritabanı/tablo/site kimliğine göre ayrılır. Kaçırılmış tamamlanmış split-parent olayı cron ile doğrulanır; leg veya eksik tahsilat ödenmiş sayılmaz. Ana sepet tutarı ile taksit/prim içeren tahsilat ayrı tutulur; yalnız kanonik <code>details.orderAmountMinor</code> açıklaması kabul edilir. Bu alanı sunmayan sunucuda açıklanamayan fark mutabakat bekler. SDK <code>^0.28.1</code>, eski ödeme/token/anahtar ve form ayarları korunur. Gerçek yerel platform + taklit ağ testleri canlı banka/3DS kabulü veya WordPress.org onayı değildir.
 
 ## Previous 0.2.6 checkout compatibility
+
+**Historical compatibility record:** the old SDK constraints below are retained as evidence, not as current installation requirements.
 
 The 0.2.6 source tag is published on GitHub; this is separate from WordPress.org directory approval. Older pending orders keep their original payment, token and idempotency key. Their saved `_lunixi_checkout_script` is parsed as data and mounted through WordPress script enqueueing; the original HTML/JavaScript is never printed or evaluated. Existing new-format metadata takes precedence and is not rewritten. Available methods, multi-card and insurance options remain in the original form configuration.
 

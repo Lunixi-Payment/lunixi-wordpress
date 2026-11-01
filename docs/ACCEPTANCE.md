@@ -11,6 +11,8 @@ stub. That establishes create/mount/configuration behavior, not bank, browser,
 
 ## Disposable installation only
 
+**Historical acceptance evidence:** the recorded 0.2.7 runs and old SDK floor below retain their original versions and counts; they do not certify a later installer.
+
 Use PHP 8.2+ CLI with sodium, mysqli, curl, JSON and proc_open; Node.js; an isolated
 MariaDB database and official WP-CLI. PHP 8.4.1, WordPress 7.1.4, WooCommerce 11.2.1,
 MariaDB 11 and the public PHP SDK 0.28.1 floor were actually exercised.
