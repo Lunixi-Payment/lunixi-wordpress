@@ -69,11 +69,11 @@ mod seçicisi yoktur. Abonelik portalı ve alt bayi kayıt bağlantıları ayrı
 
 ## Install the merchant ZIP
 
-Use the reviewed installer ZIP and SHA256SUMS from [GitHub Releases](https://github.com/Lunixi-Payment/lunixi-wordpress/releases). In WordPress choose **Plugins → Add New → Upload Plugin**, select the ZIP, install and activate it. Composer is not needed on the store server. Choose the 1.0.0 installer and its matching checksum; WordPress.org approval is a separate status.
+Download the published 1.0.0 installer ZIP and matching SHA256SUMS from [GitHub Release v1.0.0](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/tag/v1.0.0). In WordPress choose **Plugins → Add New → Upload Plugin**, select the ZIP, install and activate it. Composer is not needed on the store server. WordPress.org approval is a separate status.
 
 The installer privately namespaces **PHP SDK 1.0.1** under `Lunixi\\WP\\Vendor`. The reviewed public commit in `bin/sdk-release.json` is the single pin used by the builder, artifact verifier and CI. Packagist source/dist references must both match it. The standalone `vendor/scoped-autoload.php` preserves public plugin classes and theme helpers while avoiding another plugin's SDK classes. `vendor/scoped-package.json` records the actual SDK version, reference, source kind and MIT license notice. An incomplete release pin fails closed. Explicit `SDK_SOURCE` and `SDK_SOURCE_REFERENCE` inputs are development acceptance only; CI publication accepts only the pinned public package.
 
-**Türkçe:** Mağazada Composer gerekmez. İncelenmiş sürüm ZIP'ini ve SHA256SUMS dosyasını Releases sayfasından alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. 1.0.0 kurulum ZIP’ini ve aynı sürümün checksum dosyasını seçin; WordPress.org onayı ayrı bir durumdur. 1.0.0 ZIP’i SDK 1.0.1'i eklentiye özel namespace ve bağımsız autoloader ile taşır. `bin/sdk-release.json` içindeki incelenmiş public commit, üretici ve CI doğrulamalarının ortak kaynağıdır; Packagist yayını ve ZIP yayını ayrı doğrulanır.
+**Türkçe:** Mağazada Composer gerekmez. Yayımlanan 1.0.0 kurulum ZIP'ini ve SHA256SUMS dosyasını [v1.0.0 sürüm sayfasından](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/tag/v1.0.0) alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. WordPress.org onayı ayrı bir durumdur. 1.0.0 ZIP’i SDK 1.0.1'i eklentiye özel namespace ve bağımsız autoloader ile taşır. `bin/sdk-release.json` içindeki incelenmiş public commit, üretici ve CI doğrulamalarının ortak kaynağıdır; Packagist yayını ve ZIP yayını ayrı ayrı doğrulandı.
 
 ## Development checkout and local build
 
