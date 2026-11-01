@@ -4,7 +4,7 @@ Tags: payment gateway, woocommerce, sanal pos, 3d secure, taksit
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.2.7
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,6 +84,10 @@ The card form is rendered and tokenised by Lunixi's JS SDK; card data never reac
 
 == Changelog ==
 
+= 1.0.0 =
+* Breaking: require canonical minor-unit strings and PHP SDK 1.0.0. Follow MIGRATION-1.0.md; preserve pending-operation and webhook identities.
+* Use exact persisted decimal amounts with the actual currency exponent.
+
 = 0.2.7 =
 * Ship a standalone PHP-Scoper-isolated SDK 0.29.6 in the merchant ZIP; Composer is not required on the merchant server. Source development retains its ^0.28.1 minimum.
 * Normalize WordPress webhook headers and reject ambiguous critical aliases, values and signed envelope mismatches.
@@ -126,3 +130,8 @@ The card form is rendered and tokenised by Lunixi's JS SDK; card data never reac
 
 = 0.1.0 =
 * Initial scaffold: shared SDK bridge (WordPress HTTP + transient token store), encrypted credential storage, WooCommerce gateway (classic + Blocks, HPOS-safe), and a verified webhook receiver.
+
+== Upgrade Notice ==
+
+= 1.0.0 =
+Money values are canonical strings. Reconcile existing pending operations before upgrading and follow MIGRATION-1.0.md.

@@ -4,6 +4,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/sdk-release.php';
+
 if (($argv[1] ?? '') === '--negative-control') {
     $artifact = realpath($argv[2] ?? '');
     if (!$artifact || !is_file($artifact . '/vendor/scoped-autoload.php')) {
@@ -141,7 +143,14 @@ if (
         . '; facade=' . (function_exists('lunixi_kyc_is_verified') ? 'yes' : 'no'));
 }
 $metadata = json_decode(file_get_contents($root . '/vendor/scoped-package.json'), true, 512, JSON_THROW_ON_ERROR);
-if ($metadata['sdk']['version'] !== '0.29.6' || $metadata['sdk']['sourceReference'] !== '29fb3ac2f0fdff7a3825e189572c7aef4b212cc1') {
+$expectedSdkReference = LUNIXI_DIST_SDK_REFERENCE;
+if (($metadata['sdk']['sourceKind'] ?? '') === 'reviewed-local') {
+    $expectedSdkReference = getenv('SDK_SOURCE_REFERENCE') ?: '';
+    if (preg_match('/^[a-f0-9]{40}$/D', $expectedSdkReference) !== 1) {
+        throw new RuntimeException('Local artifact validation requires the reviewed SDK_SOURCE_REFERENCE.');
+    }
+}
+if (preg_match('/^[a-f0-9]{40}$/D', $expectedSdkReference) !== 1 || $metadata['sdk']['version'] !== LUNIXI_DIST_SDK_VERSION || $metadata['sdk']['sourceReference'] !== $expectedSdkReference) {
     throw new RuntimeException('SDK pin mismatch.');
 }
 if (!is_file($root . '/vendor/lunixi/php-sdk/LICENSE')) {

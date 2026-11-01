@@ -6,6 +6,7 @@ namespace Lunixi\WP\Marketplace;
 
 use Lunixi\Sdk\Marketplace\MarketplaceSeller;
 use Lunixi\WP\Core\Money;
+use Lunixi\Sdk\Commerce\Money as ExactMoney;
 
 defined('ABSPATH') || exit;
 
@@ -43,7 +44,7 @@ final class CheckoutSplit
         }
         $currency = (string) $order->get_currency();
 
-        // dealerId => gross (major float)
+        // dealerId => canonical minor-unit string
         $byDealer = [];
         foreach ($order->get_items() as $item) {
             if (!$item instanceof \WC_Order_Item_Product) {
@@ -57,8 +58,8 @@ final class CheckoutSplit
             if ($dealerId === '') {
                 continue; // platform-owned line
             }
-            $gross = (float) $item->get_total() + (float) $item->get_total_tax();
-            $byDealer[$dealerId] = ($byDealer[$dealerId] ?? 0.0) + $gross;
+            $gross = ExactMoney::add(Money::toMinor($item->get_total(), $currency), Money::toMinor($item->get_total_tax(), $currency));
+            $byDealer[$dealerId] = ExactMoney::add($byDealer[$dealerId] ?? '0', $gross);
         }
 
         if ($byDealer === []) {
@@ -68,8 +69,8 @@ final class CheckoutSplit
         // Per-dealer minor amounts.
         $amounts = [];
         foreach ($byDealer as $dealerId => $gross) {
-            $minor = Money::toMinor($gross, $currency);
-            if ($minor > 0) {
+            $minor = $gross;
+            if ($minor !== '0') {
                 $amounts[(string) $dealerId] = $minor;
             }
         }
@@ -78,17 +79,18 @@ final class CheckoutSplit
         // per-line totals, so the legs can exceed what the buyer actually pays.
         // The gateway allows sum(sellers) <= total but NOT > total (ALL_OR_NOTHING
         // would reject, or vendors get over-paid). Scale the legs down to fit.
-        $total = Money::toMinor((float) $order->get_total(), $currency);
-        $sum = array_sum($amounts);
-        if ($total > 0 && $sum > $total) {
+        $total = Money::toMinor($order->get_total(), $currency);
+        $sum = '0';
+        foreach ($amounts as $amount) { $sum = ExactMoney::add($sum, $amount); }
+        if ($total !== '0' && ExactMoney::compare($sum, $total) > 0) {
             foreach ($amounts as $dealerId => $minor) {
-                $amounts[$dealerId] = (int) floor($minor * $total / $sum);
+                $amounts[$dealerId] = ExactMoney::prorate($minor, $total, $sum);
             }
         }
 
         $legs = [];
         foreach ($amounts as $dealerId => $minor) {
-            if ($minor > 0) {
+            if ($minor !== '0') {
                 $legs[] = new MarketplaceSeller($dealerId, $minor);
             }
         }

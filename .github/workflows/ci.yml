@@ -147,6 +147,12 @@ jobs:
           version = matches[0]
           name = "lunixi-" + version + ".zip"
           import hashlib, json, os, stat, zipfile
+          source_pin = json.loads(Path("bin/sdk-release.json").read_text(encoding="utf-8"))
+          if (set(source_pin) != {"version", "reference"} or not isinstance(source_pin.get("version"), str)
+                  or not re.fullmatch(r"1\.0\.(?:0|[1-9][0-9]*)", source_pin["version"])
+                  or not isinstance(source_pin.get("reference"), str)
+                  or not re.fullmatch(r"[0-9a-f]{40}", source_pin["reference"])):
+              raise SystemExit("The checked source requires a reviewed public SDK 1.0 pin.")
           folder = Path("release-assets")
           if folder.is_symlink() or not folder.is_dir() or {item.name for item in folder.iterdir()} != {name, "SHA256SUMS"}:
               raise SystemExit("Only the expected merchant ZIP and SHA256SUMS are accepted.")
@@ -184,7 +190,7 @@ jobs:
               metadata = json.loads(archive.read("lunixi/vendor/scoped-package.json"))
               if headers != [version] or metadata.get("pluginVersion") != version:
                   raise SystemExit("Source header and packaged plugin version differ.")
-              if (metadata.get("sdk") != {"name": "lunixi/php-sdk", "version": "0.29.6", "sourceReference": "29fb3ac2f0fdff7a3825e189572c7aef4b212cc1", "license": "MIT"}
+              if (metadata.get("sdk") != {"name": "lunixi/php-sdk", "version": source_pin["version"], "sourceReference": source_pin["reference"], "sourceKind": "published", "license": "MIT"}
                       or metadata.get("prefix") != "Lunixi\\WP\\Vendor" or metadata.get("merchantComposerRequired") is not False
                       or not re.fullmatch(r"PhpScoper version 0\.18\.[0-9]+(?:@[0-9A-Za-z._-]+)?", metadata.get("scoper", ""))):
                   raise SystemExit("The exact standalone scoped SDK build is required.")
@@ -246,6 +252,12 @@ jobs:
           version = matches[0]
           name = "lunixi-" + version + ".zip"
           import hashlib, json, os, stat, zipfile
+          source_pin = json.loads(Path("bin/sdk-release.json").read_text(encoding="utf-8"))
+          if (set(source_pin) != {"version", "reference"} or not isinstance(source_pin.get("version"), str)
+                  or not re.fullmatch(r"1\.0\.(?:0|[1-9][0-9]*)", source_pin["version"])
+                  or not isinstance(source_pin.get("reference"), str)
+                  or not re.fullmatch(r"[0-9a-f]{40}", source_pin["reference"])):
+              raise SystemExit("The checked source requires a reviewed public SDK 1.0 pin.")
           folder = Path("release-assets")
           if folder.is_symlink() or not folder.is_dir() or {item.name for item in folder.iterdir()} != {name, "SHA256SUMS"}:
               raise SystemExit("Only the expected merchant ZIP and SHA256SUMS are accepted.")
@@ -283,7 +295,7 @@ jobs:
               metadata = json.loads(archive.read("lunixi/vendor/scoped-package.json"))
               if headers != [version] or metadata.get("pluginVersion") != version:
                   raise SystemExit("Source header and packaged plugin version differ.")
-              if (metadata.get("sdk") != {"name": "lunixi/php-sdk", "version": "0.29.6", "sourceReference": "29fb3ac2f0fdff7a3825e189572c7aef4b212cc1", "license": "MIT"}
+              if (metadata.get("sdk") != {"name": "lunixi/php-sdk", "version": source_pin["version"], "sourceReference": source_pin["reference"], "sourceKind": "published", "license": "MIT"}
                       or metadata.get("prefix") != "Lunixi\\WP\\Vendor" or metadata.get("merchantComposerRequired") is not False
                       or not re.fullmatch(r"PhpScoper version 0\.18\.[0-9]+(?:@[0-9A-Za-z._-]+)?", metadata.get("scoper", ""))):
                   raise SystemExit("The exact standalone scoped SDK build is required.")
@@ -294,7 +306,7 @@ jobs:
           notes = "Standalone WordPress/WooCommerce merchant ZIP and SHA256SUMS from a fully passing workflow.\n\n"
           notes += "Source commit: " + os.environ["GITHUB_SHA"] + "\n"
           notes += "Verification: " + os.environ["GITHUB_SERVER_URL"] + "/" + os.environ["GITHUB_REPOSITORY"] + "/actions/runs/" + os.environ["GITHUB_RUN_ID"] + "\n\n"
-          notes += "Includes namespace-isolated PHP SDK 0.29.6; the merchant needs no Composer install. Verify SHA256SUMS before staging installation and preserve pending payment identities and encryption keys.\n\n"
+          notes += "Includes namespace-isolated PHP SDK " + source_pin["version"] + "; the merchant needs no Composer install. Verify SHA256SUMS before staging installation and preserve pending payment identities and encryption keys.\n\n"
           notes += "CI checks source and bundled PHP 7.4 syntax, SDK symbols/audit and scoped-loader collision controls. Native acceptance uses explicit synthetic gateway/SDK collaborators; this release does not claim a live bank/card/3DS transaction, theme certification or WordPress.org approval.\n"
           Path("release-notes.md").write_text(notes, encoding="utf-8")
           PY

@@ -20,7 +20,7 @@ final class PaymentEvidence
     public static function snapshot(\WC_Order $order): array
     {
         $native = ['orderId' => (string) $order->get_order_number(), 'currency' => (string) $order->get_currency(),
-            'amount' => self::minor((string) $order->get_total(), Money::exponent((string) $order->get_currency()))];
+            'amount' => self::minor($order->get_total(), Money::exponent((string) $order->get_currency()))];
         $items = [];
         if (method_exists($order, 'get_items')) {
             foreach ($order->get_items() as $id => $item) {
@@ -33,33 +33,17 @@ final class PaymentEvidence
     }
 
     /** Strict decimal conversion at the native WooCommerce string boundary. */
-    public static function minor(string $decimal, int $exponent): int
+    public static function minor(string $decimal, int $exponent): string
     {
-        if (!preg_match('/^(0|[1-9][0-9]*)(?:\.([0-9]+))?$/D', $decimal, $matches)) {
-            throw new \RuntimeException('Native amount must be a decimal string.');
-        }
-        $fraction = rtrim($matches[2] ?? '', '0');
-        if (strlen($fraction) > $exponent) {
-            throw new \RuntimeException('Native amount precision mismatch.');
-        }
-        $value = ltrim($matches[1] . str_pad($fraction, $exponent, '0'), '0');
-        return self::integer($value === '' ? '0' : $value);
+        try { return \Lunixi\Sdk\Commerce\Money::minor($decimal, $exponent); }
+        catch (\InvalidArgumentException $error) { throw new \RuntimeException($error->getMessage(), 0, $error); }
     }
 
     /** @param mixed $value */
-    public static function integer($value): int
+    public static function integer($value): string
     {
-        if (is_int($value) && $value < 0) {
-            throw new \RuntimeException('Settlement amount must be an unsigned integer.');
-        }
-        if (!(is_int($value) || (is_string($value) && preg_match('/^(0|[1-9][0-9]*)$/D', $value)))) {
-            throw new \RuntimeException('Settlement amount must be an unsigned integer.');
-        }
-        $string = (string) $value;
-        if (strlen($string) > 16 || (strlen($string) === 16 && strcmp($string, '9007199254740991') > 0)) {
-            throw new \RuntimeException('Settlement amount exceeds the safe integer bound.');
-        }
-        return (int) $string;
+        try { return \Lunixi\Sdk\Commerce\Money::integer($value); }
+        catch (\InvalidArgumentException $error) { throw new \RuntimeException($error->getMessage(), 0, $error); }
     }
 
     /** @param array<string,mixed>|null $claims @param array<string,mixed>|null $response @return array<string,mixed> */
@@ -156,7 +140,7 @@ final class PaymentEvidence
             throw new \RuntimeException('Original order evidence must be a decimal string.');
         }
         $base = array_key_exists('orderAmountMinor', $details) ? self::integer($details['orderAmountMinor']) : $amount;
-        if ($amount < 1 || $base !== $expected['amount'] || $amount < $base) {
+        if ($amount === '0' || $base !== $expected['amount'] || \Lunixi\Sdk\Commerce\Money::compare($amount, $base) < 0) {
             throw new \RuntimeException('Charged amount breakdown requires reconciliation.');
         }
         if (is_array($payment['split'] ?? null) || ($payment['status'] ?? '') === 'SETTLED_BY_SPLIT') {
@@ -171,8 +155,8 @@ final class PaymentEvidence
                 || self::integer($data['aggregate']['totalAmount'] ?? null) !== $amount
                 || self::integer($data['aggregate']['legsAmount'] ?? null) !== $amount
                 || self::integer($data['aggregate']['capturedAmount'] ?? null) !== $amount
-                || self::integer($data['aggregate']['compensatedAmount'] ?? null) !== 0
-                || self::integer($data['refund']['refundedAmount'] ?? null) !== 0
+                || self::integer($data['aggregate']['compensatedAmount'] ?? null) !== '0'
+                || self::integer($data['refund']['refundedAmount'] ?? null) !== '0'
             ) {
                 throw new \RuntimeException('Complete split-parent settlement not proven.');
             }
@@ -184,7 +168,7 @@ final class PaymentEvidence
             }
             $captured = self::integer($details['capturedAmount'] ?? null);
             $refunded = self::integer($details['refundedAmount'] ?? null);
-            if (($payment['status'] ?? '') !== 'CAPTURED' || $captured !== $amount || $refunded !== 0) {
+            if (($payment['status'] ?? '') !== 'CAPTURED' || $captured !== $amount || $refunded !== '0') {
                 throw new \RuntimeException('Complete unrefunded capture not authoritative.');
             }
         }
@@ -193,13 +177,13 @@ final class PaymentEvidence
                 throw new \RuntimeException('Signed event and authenticated payment disagree.');
             }
         }
-        foreach (['amountMinor' => $amount, 'capturedAmountMinor' => $captured, 'cumulativeCapturedMinor' => $captured, 'remainingCapturableMinor' => 0] as $field => $value) {
+        foreach (['amountMinor' => $amount, 'capturedAmountMinor' => $captured, 'cumulativeCapturedMinor' => $captured, 'remainingCapturableMinor' => '0'] as $field => $value) {
             if (isset($claims[$field]) && self::integer($claims[$field]) !== $value) {
                 throw new \RuntimeException('Signed settlement amount disagrees.');
             }
         }
         return ['paymentId' => $paymentId, 'merchantId' => $expected['merchantId'], 'currency' => $expected['currency'],
-            'amount' => $amount, 'orderAmount' => $base, 'additionsAmount' => $amount - $base,
+            'amount' => $amount, 'orderAmount' => $base, 'additionsAmount' => \Lunixi\Sdk\Commerce\Money::subtract($amount, $base),
             'capturedAmount' => $captured, 'data' => $payment];
     }
 }

@@ -1,4 +1,6 @@
 <p align="center">
+
+> Version 1.0 uses canonical minor-unit strings for all money. Read [the migration guide](MIGRATION-1.0.md). Source tags, verified merchant ZIPs and SDK registry availability are separate release checks.
   <a href="https://lunixi.com">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Lunixi-Payment/lunixi-wordpress/main/.github/assets/lunixi-logo-dark.svg">
@@ -9,7 +11,7 @@
 
 # Lunixi for WordPress
 
-**Verified installer 0.2.7:** [lunixi-0.2.7.zip](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/download/v0.2.7/lunixi-0.2.7.zip) · [SHA256SUMS](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/download/v0.2.7/SHA256SUMS) · [Passing release CI](https://github.com/Lunixi-Payment/lunixi-wordpress/actions/runs/41243895958). Public SHA-256: `97617381478ad984a42c5bd546598ddb480185693c7fdcb6b633ec81a492a8e1`.
+**Historical verified installer 0.2.7 (numeric-money API; incompatible with the 1.0 cut):** [lunixi-0.2.7.zip](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/download/v0.2.7/lunixi-0.2.7.zip) · [SHA256SUMS](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/download/v0.2.7/SHA256SUMS) · [Passing release CI](https://github.com/Lunixi-Payment/lunixi-wordpress/actions/runs/41243895958). Public SHA-256: `97617381478ad984a42c5bd546598ddb480185693c7fdcb6b633ec81a492a8e1`.
 
 [![CI](https://github.com/Lunixi-Payment/lunixi-wordpress/actions/workflows/ci.yml/badge.svg)](https://github.com/Lunixi-Payment/lunixi-wordpress/actions/workflows/ci.yml) [![Version](https://img.shields.io/github/v/tag/Lunixi-Payment/lunixi-wordpress?label=version)](https://github.com/Lunixi-Payment/lunixi-wordpress/tags) [![WordPress](https://img.shields.io/badge/WordPress-6.4%2B-21759B?logo=wordpress&logoColor=white)](https://wordpress.org) [![WooCommerce](https://img.shields.io/badge/WooCommerce-8.0%2B-96588A?logo=woocommerce&logoColor=white)](https://woocommerce.com) [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?logo=php&logoColor=white)](https://www.php.net) [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](https://www.gnu.org/licenses/gpl-2.0.html) [![Docs](https://img.shields.io/badge/docs-docs.lunixi.com-FF6B35)](https://docs.lunixi.com/sdks/wordpress)
 
@@ -69,9 +71,9 @@ mod seçicisi yoktur. Abonelik portalı ve alt bayi kayıt bağlantıları ayrı
 
 Use the reviewed installer ZIP and SHA256SUMS from [GitHub Releases](https://github.com/Lunixi-Payment/lunixi-wordpress/releases). In WordPress choose **Plugins → Add New → Upload Plugin**, select the ZIP, install and activate it. Composer is not needed on the store server. The 0.2.7 standalone installer is published and downloaded/checksum verified; WordPress.org approval is a separate status.
 
-The installer privately namespaces the bundled **PHP SDK 0.29.6**, pinned to source `29fb3ac2f0fdff7a3825e189572c7aef4b212cc1`, under `Lunixi\WP\Vendor`. Its standalone `vendor/scoped-autoload.php` preserves the public plugin classes and theme helpers while avoiding another plugin's SDK classes. Source development still declares the independently tested **`^0.28.1`** minimum; the distribution's explicit SDK pin is recorded in `vendor/scoped-package.json` with its MIT license notice.
+The installer privately namespaces **PHP SDK 1.0.1** under `Lunixi\\WP\\Vendor`. The reviewed public commit in `bin/sdk-release.json` is the single pin used by the builder, artifact verifier and CI. Packagist source/dist references must both match it. The standalone `vendor/scoped-autoload.php` preserves public plugin classes and theme helpers while avoiding another plugin's SDK classes. `vendor/scoped-package.json` records the actual SDK version, reference, source kind and MIT license notice. An incomplete release pin fails closed. Explicit `SDK_SOURCE` and `SDK_SOURCE_REFERENCE` inputs are development acceptance only; CI publication accepts only the pinned public package.
 
-**Türkçe:** Mağazada Composer gerekmez. İncelenmiş sürüm ZIP'ini ve SHA256SUMS dosyasını Releases sayfasından alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. 0.2.7 bağımsız kurulum ZIP’i yayımlandı ve indirilerek doğrulandı; WordPress.org onayı ayrı bir durumdur. ZIP, SDK 0.29.6'yı eklentiye özel namespace ve bağımsız autoloader ile taşır. Kaynak geliştirme bağımlılığının `^0.28.1` alt sınırı ile ZIP'in sabit gömülü sürümü farklıdır.
+**Türkçe:** Mağazada Composer gerekmez. İncelenmiş sürüm ZIP'ini ve SHA256SUMS dosyasını Releases sayfasından alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. 0.2.7 bağımsız kurulum ZIP’i yayımlandı ve indirilerek doğrulandı; WordPress.org onayı ayrı bir durumdur. 1.0.0 ZIP’i SDK 1.0.1'i eklentiye özel namespace ve bağımsız autoloader ile taşır. `bin/sdk-release.json` içindeki incelenmiş public commit, üretici ve CI doğrulamalarının ortak kaynağıdır; Packagist yayını ve ZIP yayını ayrı doğrulanır.
 
 ## Development checkout and local build
 

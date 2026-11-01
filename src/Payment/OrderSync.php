@@ -101,7 +101,7 @@ final class OrderSync
             $order->update_meta_data('_lunixi_attempt_status', 'CAPTURED');
             $order->update_meta_data('_lunixi_charged_amount_minor', (string) $proof['amount']);
             $order->update_meta_data('_lunixi_order_amount_minor', (string) ($proof['orderAmount'] ?? $proof['amount']));
-            $order->update_meta_data('_lunixi_additions_amount_minor', (string) ($proof['additionsAmount'] ?? 0));
+            $order->update_meta_data('_lunixi_additions_amount_minor', (string) ($proof['additionsAmount'] ?? '0'));
             $order->save_meta_data();
             $order->payment_complete($intentId);
             $order->add_order_note(sprintf(
@@ -193,9 +193,12 @@ final class OrderSync
         // refund (e.g. from the Lunixi panel) needs a matching WC refund record
         // for the unrecorded delta. refund_payment=false → no gateway call, no loop.
         if ($totalRefunded !== null) {
-            $wcRefundedMinor = Money::toMinor((float) $order->get_total_refunded(), $currency);
-            $delta = (int) $totalRefunded - $wcRefundedMinor;
-            if ($delta > 0) {
+            $wcRefundedMinor = '0';
+            foreach ($order->get_refunds() as $refund) {
+                $wcRefundedMinor = \Lunixi\Sdk\Commerce\Money::add($wcRefundedMinor, Money::toMinor($refund->get_amount('edit'), $currency));
+            }
+            if (\Lunixi\Sdk\Commerce\Money::compare($totalRefunded, $wcRefundedMinor) > 0) {
+                $delta = \Lunixi\Sdk\Commerce\Money::subtract($totalRefunded, $wcRefundedMinor);
                 wc_create_refund([
                     'order_id' => $order->get_id(),
                     'amount' => Money::toMajor((string) $delta, $currency),

@@ -244,7 +244,7 @@ final class Gateway extends \WC_Payment_Gateway
 
     /**
      * @param int        $order_id
-     * @param float|null $amount
+     * @param string|null $amount Exact WooCommerce refund decimal; float-only callers must supply persisted text.
      * @param string     $reason
      * @return bool|\WP_Error
      */
@@ -261,15 +261,18 @@ final class Gateway extends \WC_Payment_Gateway
 
         try {
             $amountMinor = $amount !== null
-                ? Money::toMinor((float) $amount, (string) $order->get_currency())
+                ? Money::toMinor($amount, (string) $order->get_currency())
                 : null;
             $key = 'wc-refund-' . $order->get_id() . '-' . substr(md5((string) $amount . $reason . microtime()), 0, 12);
 
-            $result = Plugin::instance()->sdk()->client()->payments()->refund($intentId, $amountMinor, $reason, $key);
+            $payments = Plugin::instance()->sdk()->client()->payments();
+            $result = $amountMinor === null
+                ? $payments->refundRemaining($intentId, $reason, $key)
+                : $payments->refund($intentId, $amountMinor, $reason, $key);
             $order->add_order_note(sprintf(
                 /* translators: 1: amount, 2: resulting status */
                 __('Lunixi refund processed (%1$s) — status %2$s.', 'lunixi'),
-                $amount !== null ? wc_price((float) $amount) : __('full', 'lunixi'),
+                $amountMinor !== null ? Money::format($amountMinor, (string) $order->get_currency()) : __('full', 'lunixi'),
                 $result->status()
             ));
             return true;

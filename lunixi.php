@@ -3,7 +3,7 @@
  * Plugin Name:       Lunixi
  * Plugin URI:        https://lunixi.com/integrations/wordpress
  * Description:       Lunixi payments for WooCommerce: card checkout with 3D Secure, pre-authorization, refunds and signed webhooks, plus fraud, subscription, KYC and sanction screening.
- * Version:           0.2.7
+ * Version:           1.0.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            Lunixi
@@ -27,7 +27,7 @@ if (defined('LUNIXI_VERSION')) {
     return; // already loaded
 }
 
-define('LUNIXI_VERSION', '0.2.7');
+define('LUNIXI_VERSION', '1.0.0');
 define('LUNIXI_FILE', __FILE__);
 define('LUNIXI_PATH', plugin_dir_path(__FILE__));
 define('LUNIXI_URL', plugin_dir_url(__FILE__));

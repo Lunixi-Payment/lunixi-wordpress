@@ -50,7 +50,7 @@ final class OrderActions
 
         try {
             $key = 'wc-capture-' . $order->get_id() . '-' . substr(md5($intentId), 0, 12);
-            $result = Plugin::instance()->sdk()->client()->payments()->capture($intentId, null, $key);
+            $result = Plugin::instance()->sdk()->client()->payments()->captureRemaining($intentId, $key);
             $order->add_order_note(sprintf(
                 /* translators: %s = resulting status */
                 __('Lunixi: capture requested on completion — status %s.', 'lunixi'),

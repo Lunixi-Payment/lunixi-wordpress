@@ -4,8 +4,9 @@
 
 declare(strict_types=1);
 
-const LUNIXI_DIST_SDK_VERSION = '0.29.6';
-const LUNIXI_DIST_SDK_REFERENCE = '29fb3ac2f0fdff7a3825e189572c7aef4b212cc1';
+require_once __DIR__ . '/sdk-release.php';
+$sdkReference = LUNIXI_DIST_SDK_REFERENCE;
+$sdkSourceKind = 'published';
 const LUNIXI_DIST_PREFIX = 'Lunixi\\WP\\Vendor';
 $plugin = dirname(__DIR__);
 $build = $plugin . '/build';
@@ -99,25 +100,47 @@ try {
         throw new RuntimeException('Plugin version unavailable.');
     } $version = $match[1];
     $composer = getenv('LUNIXI_COMPOSER_BINARY') ?: 'composer';
-    $manifest = ['name' => 'lunixi-build/wordpress-sdk', 'require' => ['lunixi/php-sdk' => LUNIXI_DIST_SDK_VERSION],
-        'config' => ['secure-http' => true, 'allow-plugins' => false]];
-    file_put_contents($work . '/sdk/composer.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
-    distRun([$composer, 'install', '--working-dir=' . $work . '/sdk', '--no-dev', '--no-plugins', '--no-scripts', '--prefer-dist', '--no-progress', '--no-interaction'], $plugin, $environment);
-    distRun([$composer, 'audit', '--working-dir=' . $work . '/sdk', '--locked', '--no-plugins', '--format=json'], $plugin, $environment);
-    $lock = json_decode(file_get_contents($work . '/sdk/composer.lock'), true, 512, JSON_THROW_ON_ERROR);
-    $sdk = null;
-    foreach ($lock['packages'] as $package) {
-        if ($package['name'] === 'lunixi/php-sdk') {
-            $sdk = $package;
+    $localSdk = getenv('SDK_SOURCE') ?: null;
+    if ($localSdk !== null) {
+        $localSdk = realpath($localSdk);
+        $expectedReference = getenv('SDK_SOURCE_REFERENCE') ?: '';
+        if ($localSdk === false || preg_match('/^[a-f0-9]{40}$/D', $expectedReference) !== 1 || !is_file($localSdk . '/composer.json')) {
+            throw new RuntimeException('Reviewed local build requires SDK_SOURCE and its exact SDK_SOURCE_REFERENCE commit.');
         }
+        $localManifest = json_decode(file_get_contents($localSdk . '/composer.json'), true, 512, JSON_THROW_ON_ERROR);
+        $sdkReference = trim(distRun(['git', 'rev-parse', 'HEAD'], $localSdk, $environment));
+        $dirty = trim(distRun(['git', 'status', '--porcelain', '--', 'src', 'composer.json', 'LICENSE'], $localSdk, $environment));
+        if (($localManifest['name'] ?? '') !== 'lunixi/php-sdk' || ($localManifest['version'] ?? '') !== LUNIXI_DIST_SDK_VERSION || $sdkReference !== $expectedReference || $dirty !== '') {
+            throw new RuntimeException('Local SDK version, reviewed commit or clean source check failed.');
+        }
+        $sdkSourceKind = 'reviewed-local';
+        foreach (['src', 'composer.json', 'LICENSE'] as $file) {
+            distCopy($localSdk . '/' . $file, $work . '/input/vendor/lunixi/php-sdk/' . $file);
+        }
+    } else {
+        if (preg_match('/^[a-f0-9]{40}$/D', LUNIXI_DIST_SDK_REFERENCE) !== 1) {
+            throw new RuntimeException('Verified public SDK pin is missing from bin/sdk-release.json; use a reviewed SDK_SOURCE/SDK_SOURCE_REFERENCE pair only for local acceptance.');
+        }
+        $manifest = ['name' => 'lunixi-build/wordpress-sdk', 'require' => ['lunixi/php-sdk' => LUNIXI_DIST_SDK_VERSION],
+            'config' => ['secure-http' => true, 'allow-plugins' => false]];
+        file_put_contents($work . '/sdk/composer.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
+        distRun([$composer, 'install', '--working-dir=' . $work . '/sdk', '--no-dev', '--no-plugins', '--no-scripts', '--prefer-dist', '--no-progress', '--no-interaction'], $plugin, $environment);
+        distRun([$composer, 'audit', '--working-dir=' . $work . '/sdk', '--locked', '--no-plugins', '--format=json'], $plugin, $environment);
+        $lock = json_decode(file_get_contents($work . '/sdk/composer.lock'), true, 512, JSON_THROW_ON_ERROR);
+        $sdk = null;
+        foreach ($lock['packages'] as $package) {
+            if ($package['name'] === 'lunixi/php-sdk') {
+                $sdk = $package;
+            }
+        }
+        if (
+            !$sdk || ltrim($sdk['version'], 'v') !== LUNIXI_DIST_SDK_VERSION || count($lock['packages']) !== 1
+            || $sdk['source']['reference'] !== LUNIXI_DIST_SDK_REFERENCE || $sdk['dist']['reference'] !== LUNIXI_DIST_SDK_REFERENCE
+        ) {
+            throw new RuntimeException('SDK reference/dependency graph changed; review the immutable build pin.');
+        }
+        distCopy($work . '/sdk/vendor/lunixi/php-sdk', $work . '/input/vendor/lunixi/php-sdk');
     }
-    if (
-        !$sdk || ltrim($sdk['version'], 'v') !== LUNIXI_DIST_SDK_VERSION || count($lock['packages']) !== 1
-        || $sdk['source']['reference'] !== LUNIXI_DIST_SDK_REFERENCE || $sdk['dist']['reference'] !== LUNIXI_DIST_SDK_REFERENCE
-    ) {
-        throw new RuntimeException('SDK reference/dependency graph changed; review the immutable build pin.');
-    }
-    distCopy($work . '/sdk/vendor/lunixi/php-sdk', $work . '/input/vendor/lunixi/php-sdk');
     $scoper = getenv('LUNIXI_SCOPER_BINARY') ?: $plugin . '/vendor/bin/php-scoper';
     if (!is_file($scoper)) {
         $tools = ['require' => ['humbug/php-scoper' => '^0.18'], 'config' => ['secure-http' => true, 'allow-plugins' => false, 'platform' => ['php' => '8.2.0']]];
@@ -150,9 +173,12 @@ spl_autoload_register(static function (string $class): void {
 LOADER;
     file_put_contents($prepared . '/vendor/scoped-autoload.php', $loader . "\n");
     $metadata = ['pluginVersion' => $version, 'sdk' => ['name' => 'lunixi/php-sdk', 'version' => LUNIXI_DIST_SDK_VERSION,
-        'sourceReference' => LUNIXI_DIST_SDK_REFERENCE, 'license' => 'MIT'], 'prefix' => LUNIXI_DIST_PREFIX, 'scoper' => $toolVersion, 'merchantComposerRequired' => false];
+        'sourceReference' => $sdkReference, 'sourceKind' => $sdkSourceKind, 'license' => 'MIT'], 'prefix' => LUNIXI_DIST_PREFIX, 'scoper' => $toolVersion, 'merchantComposerRequired' => false];
     file_put_contents($prepared . '/vendor/scoped-package.json', json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
-    file_put_contents($prepared . '/THIRD-PARTY-NOTICES.txt', "Lunixi PHP SDK " . LUNIXI_DIST_SDK_VERSION . "\nMIT License: vendor/lunixi/php-sdk/LICENSE\nSource: https://github.com/Lunixi-Payment/lunixi-php/tree/" . LUNIXI_DIST_SDK_REFERENCE . "\nPrivately namespaced with PHP-Scoper; merchant Composer is not required.\n");
+    $sourceNotice = $sdkSourceKind === 'reviewed-local'
+        ? 'Reviewed local SDK source commit: ' . $sdkReference
+        : 'Source: https://github.com/Lunixi-Payment/lunixi-php/tree/' . $sdkReference;
+    file_put_contents($prepared . '/THIRD-PARTY-NOTICES.txt', "Lunixi PHP SDK " . LUNIXI_DIST_SDK_VERSION . "\nMIT License: vendor/lunixi/php-sdk/LICENSE\n" . $sourceNotice . "\nPrivately namespaced with PHP-Scoper; merchant Composer is not required.\n");
     distRun([PHP_BINARY, '-d', 'zend.exception_ignore_args=1', $plugin . '/bin/check-dist.php', $prepared], $plugin, $environment);
     $dist = $build . '/dist';
     if (!is_dir($dist)) {
@@ -182,7 +208,7 @@ LOADER;
     $hash = hash_file('sha256', $zipPath);
     file_put_contents($dist . '/SHA256SUMS', $hash . '  ' . basename($zipPath) . "\n");
     echo json_encode(['artifact' => $zipPath, 'bytes' => filesize($zipPath), 'sha256' => $hash, 'bundledSdk' => LUNIXI_DIST_SDK_VERSION,
-        'sdkReference' => LUNIXI_DIST_SDK_REFERENCE, 'scoper' => $toolVersion, 'standaloneAutoloader' => true], JSON_THROW_ON_ERROR) . "\n";
+        'sdkReference' => $sdkReference, 'sdkSourceKind' => $sdkSourceKind, 'scoper' => $toolVersion, 'standaloneAutoloader' => true], JSON_THROW_ON_ERROR) . "\n";
 } finally {
     distRemove($work);
 }

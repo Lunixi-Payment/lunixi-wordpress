@@ -4,50 +4,40 @@ declare(strict_types=1);
 
 namespace Lunixi\WP\Core;
 
+use Lunixi\Sdk\Commerce\Money as ExactMoney;
+
 defined('ABSPATH') || exit;
 
-/**
- * Minor-unit money helpers. Gateway amounts are integers in the currency's minor
- * unit (and arrive over webhooks as STRINGS). Never use floats for the conversion
- * boundary; format for display only.
- */
+/** Exact decimal strings at the WooCommerce boundary; no floating point money. */
 final class Money
 {
-    /** ISO-4217 minor-unit exponent (digits after the decimal). */
     public static function exponent(string $currency): int
     {
-        $currency = strtoupper($currency);
-        if ($currency === 'JPY') {
-            return 0;
-        }
-        if (in_array($currency, ['KWD', 'BHD', 'OMR'], true)) {
-            return 3;
-        }
-        return 2;
+        return ExactMoney::exponent($currency);
     }
 
-    /** WooCommerce major amount (float) → minor-unit integer. */
-    public static function toMinor(float $major, string $currency): int
+    /** @param mixed $major Persisted WooCommerce decimal text, never a float. */
+    public static function toMinor($major, string $currency): string
     {
-        return (int) round($major * (10 ** self::exponent($currency)));
+        return ExactMoney::minor($major, self::exponent($currency));
     }
 
-    /** Minor-unit value (int or numeric string from a webhook) → major amount (float). */
-    public static function toMajor($minor, string $currency): float
+    public static function toMajor(string $minor, string $currency): string
     {
-        $minorInt = is_string($minor) ? (int) $minor : (int) $minor;
-
-        return $minorInt / (10 ** self::exponent($currency));
+        return ExactMoney::decimal($minor, self::exponent($currency));
     }
 
-    /** Localised, currency-formatted display string for a minor-unit value. */
-    public static function format($minor, string $currency): string
+    /** Format digits directly so large amounts cannot round during display. */
+    public static function format(string $minor, string $currency): string
     {
-        $major = self::toMajor($minor, $currency);
-        if (function_exists('wc_price')) {
-            return wp_strip_all_tags(wc_price($major, ['currency' => strtoupper($currency)]));
+        $parts = explode('.', self::toMajor($minor, $currency));
+        $group = function_exists('wc_get_price_thousand_separator') ? wc_get_price_thousand_separator() : ',';
+        $decimal = function_exists('wc_get_price_decimal_separator') ? wc_get_price_decimal_separator() : '.';
+        $whole = preg_replace('/\B(?=(?:[0-9]{3})+(?![0-9]))/', $group, $parts[0]);
+        $number = $whole . (isset($parts[1]) ? $decimal . $parts[1] : '');
+        if (function_exists('get_woocommerce_price_format') && function_exists('get_woocommerce_currency_symbol')) {
+            return wp_strip_all_tags(sprintf(get_woocommerce_price_format(), get_woocommerce_currency_symbol($currency), $number));
         }
-
-        return number_format($major, self::exponent($currency)) . ' ' . strtoupper($currency);
+        return $number . ' ' . $currency;
     }
 }
