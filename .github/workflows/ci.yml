@@ -149,10 +149,10 @@ jobs:
           import hashlib, json, os, stat, zipfile
           source_pin = json.loads(Path("bin/sdk-release.json").read_text(encoding="utf-8"))
           if (set(source_pin) != {"version", "reference"} or not isinstance(source_pin.get("version"), str)
-                  or not re.fullmatch(r"1\.0\.(?:0|[1-9][0-9]*)", source_pin["version"])
+                  or not re.fullmatch(r"1\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", source_pin["version"])
                   or not isinstance(source_pin.get("reference"), str)
                   or not re.fullmatch(r"[0-9a-f]{40}", source_pin["reference"])):
-              raise SystemExit("The checked source requires a reviewed public SDK 1.0 pin.")
+              raise SystemExit("The checked source requires a reviewed public SDK 1.x pin.")
           folder = Path("release-assets")
           if folder.is_symlink() or not folder.is_dir() or {item.name for item in folder.iterdir()} != {name, "SHA256SUMS"}:
               raise SystemExit("Only the expected merchant ZIP and SHA256SUMS are accepted.")
@@ -254,10 +254,10 @@ jobs:
           import hashlib, json, os, stat, zipfile
           source_pin = json.loads(Path("bin/sdk-release.json").read_text(encoding="utf-8"))
           if (set(source_pin) != {"version", "reference"} or not isinstance(source_pin.get("version"), str)
-                  or not re.fullmatch(r"1\.0\.(?:0|[1-9][0-9]*)", source_pin["version"])
+                  or not re.fullmatch(r"1\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", source_pin["version"])
                   or not isinstance(source_pin.get("reference"), str)
                   or not re.fullmatch(r"[0-9a-f]{40}", source_pin["reference"])):
-              raise SystemExit("The checked source requires a reviewed public SDK 1.0 pin.")
+              raise SystemExit("The checked source requires a reviewed public SDK 1.x pin.")
           folder = Path("release-assets")
           if folder.is_symlink() or not folder.is_dir() or {item.name for item in folder.iterdir()} != {name, "SHA256SUMS"}:
               raise SystemExit("Only the expected merchant ZIP and SHA256SUMS are accepted.")

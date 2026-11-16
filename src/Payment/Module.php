@@ -35,6 +35,9 @@ final class Module
             return $gateways;
         });
 
+        // Lunixi orders wait for their payment result (bank transfer: days).
+        add_filter('woocommerce_cancel_unpaid_order', [Gateway::class, 'cancelUnpaidOrder'], 10, 2);
+
         // Cart/Checkout Blocks integration.
         add_action('woocommerce_blocks_payment_method_type_registration', static function ($registry): void {
             if (class_exists(BlocksSupport::class)) {

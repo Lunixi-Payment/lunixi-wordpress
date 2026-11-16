@@ -27,11 +27,14 @@ final class OrderSync
     private $paidEvidence;
     /** @var callable */
     private $orderLock;
+    /** @var callable */
+    private $reviewEvidence;
 
-    public function __construct(?callable $paidEvidence = null, ?callable $orderLock = null)
+    public function __construct(?callable $paidEvidence = null, ?callable $orderLock = null, ?callable $reviewEvidence = null)
     {
         $this->paidEvidence = $paidEvidence ?? [PaymentEvidence::class, 'paid'];
         $this->orderLock = $orderLock ?? [OrderMutex::class, 'synchronized'];
+        $this->reviewEvidence = $reviewEvidence ?? [PaymentReview::class, 'evidence'];
     }
 
     public function handle(WebhookEvent $event): void
@@ -46,6 +49,7 @@ final class OrderSync
         }
         $order = self::findOrderByIntent($intentId);
         if (!$order) {
+            $this->onUnboundPayment($event, $intentId, $data);
             return;
         }
         $currency = isset($data['currency']) && $data['currency'] !== '' ? (string) $data['currency'] : (string) $order->get_currency();
@@ -97,6 +101,12 @@ final class OrderSync
             if ($order->is_paid()) {
                 return;
             }
+            // A cancelled/failed order may have been restocked, and a flagged one
+            // is the merchant's to decide: verify the money, hold it for review.
+            if (PaymentReview::closed($order) || PaymentReview::flagged($order)) {
+                $this->review($order, $intentId, $data, PaymentReview::AFTER_CLOSE);
+                return;
+            }
             $proof = ($this->paidEvidence)($order, $intentId, $data);
             $order->update_meta_data('_lunixi_attempt_status', 'CAPTURED');
             $order->update_meta_data('_lunixi_charged_amount_minor', (string) $proof['amount']);
@@ -110,6 +120,42 @@ final class OrderSync
                 Money::format($proof['amount'], $proof['currency'])
             ));
         });
+    }
+
+    /**
+     * A signed event for a payment this store never bound. A late bank transfer
+     * accepted after its deadline is a NEW payment for the same merchant order,
+     * found by the signed `orderId`; the authenticated GET must confirm that
+     * order, or the event is rejected. Anything else is acknowledged unchanged.
+     *
+     * @param array<string,mixed> $data
+     */
+    private function onUnboundPayment(WebhookEvent $event, string $paymentId, array $data): void
+    {
+        if (!in_array($event->type(), ['payment.captured', 'payment.partially_captured'], true)) {
+            return;
+        }
+        $orderNumber = isset($data['orderId']) && is_string($data['orderId']) ? $data['orderId'] : '';
+        $order = $orderNumber !== '' ? OrderQueries::byOrderNumber($orderNumber) : null;
+        if (!$order) {
+            return;
+        }
+        ($this->orderLock)($order->get_id(), function () use ($order, $paymentId, $data): void {
+            $this->review(OrderMutex::reread($order->get_id()), $paymentId, $data, PaymentReview::LINKED_PAYMENT);
+        });
+    }
+
+    /** @param array<string,mixed> $data Called only under the native order mutex. */
+    private function review(\WC_Order $order, string $paymentId, array $data, string $reason): void
+    {
+        if (PaymentReview::recorded($order, $paymentId)) {
+            return;
+        }
+        $captured = ($this->reviewEvidence)($order, $paymentId, $data);
+        if ($captured === null) {
+            return; // no money moved: nothing for the merchant to review
+        }
+        PaymentReview::hold($order, $paymentId, (string) $captured, $reason);
     }
 
     private function onPartiallyCaptured(\WC_Order $order, string $intentId, array $data, string $currency): void
@@ -153,8 +199,8 @@ final class OrderSync
 
     private function onFailed(\WC_Order $order, array $data, string $currency): void
     {
-        if ($order->is_paid()) {
-            return; // a late failure for an already-settled order is stale — ignore
+        if ($order->is_paid() || PaymentReview::flagged($order)) {
+            return; // stale for a settled order; a held review is the merchant's decision
         }
         $code = isset($data['normalizedErrorCode']) ? (string) $data['normalizedErrorCode']
             : (isset($data['canonicalKey']) ? (string) $data['canonicalKey'] : '');
@@ -224,7 +270,7 @@ final class OrderSync
         $amount = self::amountOf($data, ['amountMinor']);
         $order->update_meta_data('_lunixi_attempt_status', 'VOIDED');
         $order->save_meta_data();
-        if (!$order->has_status('cancelled')) {
+        if (!$order->has_status('cancelled') && !PaymentReview::flagged($order)) {
             $order->update_status('cancelled', sprintf(
                 /* translators: %s = amount */
                 __('Lunixi: authorization voided — %s.', 'lunixi'),
@@ -238,7 +284,7 @@ final class OrderSync
         $amount = self::amountOf($data, ['amountMinor']);
         $order->update_meta_data('_lunixi_attempt_status', 'EXPIRED');
         $order->save_meta_data();
-        if (!$order->is_paid() && !$order->has_status('cancelled')) {
+        if (!$order->is_paid() && !$order->has_status('cancelled') && !PaymentReview::flagged($order)) {
             $order->update_status('cancelled', sprintf(
                 /* translators: %s = amount */
                 __('Lunixi: authorization expired — %s.', 'lunixi'),

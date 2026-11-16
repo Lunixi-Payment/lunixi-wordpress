@@ -69,11 +69,11 @@ mod seçicisi yoktur. Abonelik portalı ve alt bayi kayıt bağlantıları ayrı
 
 ## Install the merchant ZIP
 
-Download the published 1.0.0 installer ZIP and matching SHA256SUMS from [GitHub Release v1.0.0](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/tag/v1.0.0). In WordPress choose **Plugins → Add New → Upload Plugin**, select the ZIP, install and activate it. Composer is not needed on the store server. WordPress.org approval is a separate status.
+Download the published 1.1.0 installer ZIP and matching SHA256SUMS from [GitHub Release v1.1.0](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/tag/v1.1.0). In WordPress choose **Plugins → Add New → Upload Plugin**, select the ZIP, install and activate it. Composer is not needed on the store server. WordPress.org approval is a separate status.
 
-The installer privately namespaces **PHP SDK 1.0.1** under `Lunixi\\WP\\Vendor`. The reviewed public commit in `bin/sdk-release.json` is the single pin used by the builder, artifact verifier and CI. Packagist source/dist references must both match it. The standalone `vendor/scoped-autoload.php` preserves public plugin classes and theme helpers while avoiding another plugin's SDK classes. `vendor/scoped-package.json` records the actual SDK version, reference, source kind and MIT license notice. An incomplete release pin fails closed. Explicit `SDK_SOURCE` and `SDK_SOURCE_REFERENCE` inputs are development acceptance only; CI publication accepts only the pinned public package.
+The installer privately namespaces **PHP SDK 1.6.0** under `Lunixi\\WP\\Vendor`. The reviewed public commit in `bin/sdk-release.json` is the single pin used by the builder, artifact verifier and CI. Packagist source/dist references must both match it. The standalone `vendor/scoped-autoload.php` preserves public plugin classes and theme helpers while avoiding another plugin's SDK classes. `vendor/scoped-package.json` records the actual SDK version, reference, source kind and MIT license notice. An incomplete release pin fails closed. Explicit `SDK_SOURCE` and `SDK_SOURCE_REFERENCE` inputs are development acceptance only; CI publication accepts only the pinned public package.
 
-**Türkçe:** Mağazada Composer gerekmez. Yayımlanan 1.0.0 kurulum ZIP'ini ve SHA256SUMS dosyasını [v1.0.0 sürüm sayfasından](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/tag/v1.0.0) alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. WordPress.org onayı ayrı bir durumdur. 1.0.0 ZIP’i SDK 1.0.1'i eklentiye özel namespace ve bağımsız autoloader ile taşır. `bin/sdk-release.json` içindeki incelenmiş public commit, üretici ve CI doğrulamalarının ortak kaynağıdır; Packagist yayını ve ZIP yayını ayrı ayrı doğrulandı.
+**Türkçe:** Mağazada Composer gerekmez. Yayımlanan 1.1.0 kurulum ZIP'ini ve SHA256SUMS dosyasını [v1.1.0 sürüm sayfasından](https://github.com/Lunixi-Payment/lunixi-wordpress/releases/tag/v1.1.0) alın; WordPress → Eklentiler → Yeni Ekle → Eklenti Yükle ile kurun. WordPress.org onayı ayrı bir durumdur. 1.1.0 ZIP’i SDK 1.6.0'ı eklentiye özel namespace ve bağımsız autoloader ile taşır. `bin/sdk-release.json` içindeki incelenmiş public commit, üretici ve CI doğrulamalarının ortak kaynağıdır; Packagist kaynak ve dist referanslarının ikisi de bu pin ile eşleşmelidir.
 
 ## Development checkout and local build
 
@@ -84,7 +84,7 @@ version from [tags](https://github.com/Lunixi-Payment/lunixi-wordpress/tags):
 
 ```bash
 cd wp-content/plugins
-git clone --branch v1.0.0 https://github.com/Lunixi-Payment/lunixi-wordpress.git lunixi
+git clone --branch v1.1.0 https://github.com/Lunixi-Payment/lunixi-wordpress.git lunixi
 cd lunixi
 composer install --no-dev
 ```
@@ -97,7 +97,7 @@ php bin/check-dist.php build/dist/lunixi
 php bin/check-dist.php --negative-control build/dist/lunixi
 ```
 
-The same command works in the public repository root or under the monorepo's WordPress directory. It resolves the immutable public SDK pin using a new Composer config/cache with plugins/scripts disabled, preserves HOME, runs PHP-Scoper and verifies every SDK import and an intentionally conflicting unscoped client. Output: `build/dist/lunixi-1.0.0.zip` and `build/dist/SHA256SUMS`. Upload that ZIP. Build tools, tests, acceptance harness, Composer autoload files and developer docs are excluded from the installer.
+The same command works in the public repository root or under the monorepo's WordPress directory. It resolves the immutable public SDK pin using a new Composer config/cache with plugins/scripts disabled, preserves HOME, runs PHP-Scoper and verifies every SDK import and an intentionally conflicting unscoped client. Output: `build/dist/lunixi-1.1.0.zip` and `build/dist/SHA256SUMS`. Upload that ZIP. Build tools, tests, acceptance harness, Composer autoload files and developer docs are excluded from the installer.
 
 ## Upgrade to 0.2.7
 
@@ -132,6 +132,13 @@ The SDK stays on the 0.28.x line with constraint `^0.28.1` and the verified mini
 2. Register the webhook URL shown there
    (`https://your-site.com/wp-json/lunixi/v1/webhook`) in the Lunixi dashboard.
 3. **WooCommerce → Settings → Payments**: enable **Lunixi**.
+
+Bank transfer (Para Transferi) orders stay **pending** until the money
+arrives, up to the bank transfer deadline (1–3 business days). Orders paid with
+Lunixi are not cancelled by WooCommerce's unpaid-order timeout ("Hold stock"
+minutes). Money that arrives for a cancelled or failed order, or a late
+transfer accepted as a new payment for the same order, puts the order
+**on hold** with an order note; review it before shipping, or refund it.
 
 The full guide, settings and troubleshooting are in the
 [documentation](https://docs.lunixi.com/sdks/wordpress).

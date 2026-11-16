@@ -36,14 +36,20 @@ final class PaymentEvidence
     public static function minor(string $decimal, int $exponent): string
     {
         try { return \Lunixi\Sdk\Commerce\Money::minor($decimal, $exponent); }
-        catch (\InvalidArgumentException $error) { throw new \RuntimeException($error->getMessage(), 0, $error); }
+        catch (\InvalidArgumentException $error) { throw new \RuntimeException('Invalid decimal amount.'); }
     }
 
     /** @param mixed $value */
     public static function integer($value): string
     {
         try { return \Lunixi\Sdk\Commerce\Money::integer($value); }
-        catch (\InvalidArgumentException $error) { throw new \RuntimeException($error->getMessage(), 0, $error); }
+        catch (\InvalidArgumentException $error) { throw new \RuntimeException('Invalid integer amount.'); }
+    }
+
+    /** Option holding the merchant id learned for one API profile (base URL, key, environment). */
+    public static function bindingOption(\Lunixi\Sdk\LunixiClient $client): string
+    {
+        return 'lunixi_merchant_binding_' . hash('sha256', $client->config()->baseUrl() . "\n" . $client->config()->keyId() . "\n" . $client->config()->environment());
     }
 
     /** @param array<string,mixed>|null $claims @param array<string,mixed>|null $response @return array<string,mixed> */
@@ -86,8 +92,7 @@ final class PaymentEvidence
             throw new \RuntimeException('Authenticated payment data missing.');
         }
         $merchant = $order->get_meta('_lunixi_merchant_id');
-        $profile = hash('sha256', $client->config()->baseUrl() . "\n" . $client->config()->keyId() . "\n" . $client->config()->environment());
-        $bound = get_option('lunixi_merchant_binding_' . $profile, '');
+        $bound = get_option(self::bindingOption($client), '');
         if ($merchant === '' && is_string($bound)) {
             $merchant = $bound;
         }
@@ -110,7 +115,7 @@ final class PaymentEvidence
         // Identity is learned only from a successful, authenticated merchant GET
         // matching the stored original payment and the current native order.
         if ($bound === '') {
-            add_option('lunixi_merchant_binding_' . $profile, $proof['merchantId'], '', false);
+            add_option(self::bindingOption($client), $proof['merchantId'], '', false);
         }
         $order->update_meta_data('_lunixi_merchant_id', $proof['merchantId']);
         return $proof;

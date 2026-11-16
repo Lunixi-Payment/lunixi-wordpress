@@ -4,7 +4,7 @@ Tags: payment gateway, woocommerce, sanal pos, 3d secure, taksit
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,7 +82,16 @@ The payment gateway requires WooCommerce. Other services work on plain WordPress
 = Where is card data processed? =
 The card form is rendered and tokenised by Lunixi's JS SDK; card data never reaches your server.
 
+= Why does a bank transfer order stay pending? =
+A bank transfer (Para Transferi) is confirmed when the money reaches your account, which can take until the bank transfer deadline (1–3 business days). Orders paid with Lunixi are not cancelled by WooCommerce's unpaid-order timeout; the order completes when the payment is captured, or is cancelled when Lunixi reports it expired. If money arrives for an order that was already cancelled or failed, or a late transfer arrives as a new payment, the order is put on hold with a note: review it before shipping, or refund it.
+
 == Changelog ==
+
+= 1.1.0 =
+* Bank transfer orders paid with Lunixi are no longer cancelled by WooCommerce's unpaid-order timeout; they are cancelled only when Lunixi reports the payment expired or voided.
+* Money captured for a cancelled or failed order, or a late bank transfer accepted as a new payment for the same order, puts the order on hold with a note for review. The order is never marked paid automatically.
+* Orders held for review are skipped by the payment reconciliation job.
+* Built on PHP SDK 1.6.0.
 
 = 1.0.0 =
 * Breaking: require canonical minor-unit strings and PHP SDK 1.0.0. Follow MIGRATION-1.0.md; preserve pending-operation and webhook identities.

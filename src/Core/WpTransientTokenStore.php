@@ -23,7 +23,13 @@ final class WpTransientTokenStore implements TokenStoreInterface
 
     public function set(string $key, string $value, int $ttlSeconds): void
     {
-        set_transient($key, $value, max(0, $ttlSeconds));
+        // A transient with expiration 0 never expires, so a token without a
+        // positive lifetime is not cached; the next request fetches a fresh one.
+        if ($ttlSeconds <= 0) {
+            delete_transient($key);
+            return;
+        }
+        set_transient($key, $value, $ttlSeconds);
     }
 
     public function delete(string $key): void

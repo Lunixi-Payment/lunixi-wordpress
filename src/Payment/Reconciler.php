@@ -98,8 +98,8 @@ final class Reconciler
     private function reconcileLocked(\WC_Order $order): void
     {
         $intentId = (string) $order->get_meta('_lunixi_payment_order_id');
-        if ($intentId === '') {
-            return;
+        if ($intentId === '' || PaymentReview::flagged($order)) {
+            return; // a held review is the merchant's decision, not the backstop's
         }
 
         try {

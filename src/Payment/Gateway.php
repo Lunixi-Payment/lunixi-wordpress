@@ -282,6 +282,27 @@ final class Gateway extends \WC_Payment_Gateway
         }
     }
 
+    /**
+     * `woocommerce_cancel_unpaid_order`: WooCommerce cancels unpaid `pending`
+     * orders after the hold-stock minutes. A Lunixi payment can stay PROCESSING
+     * for days (a bank transfer waits until its deadline), so an order with a
+     * Lunixi payment is cancelled only by this plugin, from an authenticated
+     * EXPIRED / VOIDED result (webhook or Reconciler).
+     *
+     * @param mixed $cancel
+     * @param mixed $order
+     */
+    public static function cancelUnpaidOrder($cancel, $order): bool
+    {
+        if (
+            $order instanceof \WC_Order && $order->get_payment_method() === self::GATEWAY_ID
+            && (string) $order->get_meta('_lunixi_payment_order_id') !== ''
+        ) {
+            return false;
+        }
+        return (bool) $cancel;
+    }
+
     /** Presentation only: native state/binding must still describe the same unpaid attempt. */
     private static function resumableBootstrap(\WC_Order $order): ?CheckoutBootstrap
     {
